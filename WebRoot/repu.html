@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title></title>
+	<link href='css/bootstrap.min.css' rel='stylesheet' />
+    <link href='css/bootstrap-responsive.min.css' rel='stylesheet' />
+    <link href='css/mystyle.css' rel='stylesheet' />
+	<script src = 'libs/SuperMap.Include.js'></script>
+	 <link href='css/blowdown.css' rel='stylesheet' />
+     <script type="text/javascript">
+     			var supermap,vector,markerlayer,markerlayer1,featuresLayer,selectFeature_Station,selectFeature_vector,selectFeature_vector1,selectFeature_vector2,markers;
+                function init(){
+                   supermap = new SuperMap.Map("map", {
+						controls : [ new SuperMap.Control.Navigation(),
+								new SuperMap.Control.Zoom(),
+								new SuperMap.Control.MousePosition() ]
+					});
+					
+					layer = new SuperMap.Layer.CloudLayer();
+					vector = new SuperMap.Layer.Vector("vector");//路网热普地图
+					markers = new SuperMap.Layer.Markers("Markers");
+					// vector1 = new SuperMap.Layer.Vector("vector1");//路网路面状态
+					// vector2 = new SuperMap.Layer.Vector("vector2");//路网冰点预测
+					markerlayer = new SuperMap.Layer.Markers("markerLayer");//气象站点
+					markerlayer1 = new SuperMap.Layer.Markers("markerLayer1");//视频监控点
+					featuresLayer = new SuperMap.Layer.Vector();//创建观测站点
+					supermap.addLayers([layer,markerlayer,markerlayer1,vector,markers]);
+					setCenter();
+					var selectFeature_Station = new SuperMap.Control.SelectFeature(featuresLayer,{//创建人员右键控件
+		                    callbacks: {"rightclick":add_Station}
+		                });    
+		            supermap.addControl(selectFeature_Station);
+		            selectFeature_Station.activate();
+		            selectFeature_vector = new SuperMap.Control.SelectFeature(vector,{//创建人员右键控件
+		                    callbacks: {}
+		                });    
+		            supermap.addControl(selectFeature_vector);
+		            selectFeature_vector.activate();
+		            // var selectFeature_vector1 = new SuperMap.Control.SelectFeature(vector1,{//创建人员右键控件
+		            //         callbacks: {"click":getlinkId}
+		            //     });    
+		            // supermap.addControl(selectFeature_vector1);
+		            // selectFeature_vector1.activate();
+		            // var selectFeature_vector2 = new SuperMap.Control.SelectFeature(vector2,{//创建人员右键控件
+		            //         callbacks: {"click":getlinkId}
+		            //     });    
+		            // supermap.addControl(selectFeature_vector2);
+		            // selectFeature_vector2.activate();
+		            queryRoadNetFeature();
+		            
+					 //路网左键控件
+					// var selectFeature_Station = new SuperMap.Control.SelectFeature(vector1,{
+		   //                  callbacks: {"click":drawCompleted}
+		   //              });    
+		            // supermap.addControl(selectFeature_Station);
+		            // selectFeature_Station.activate();
+
+                }
+    </script>
+    
+
+</head>
+<body onLoad = "init()">
+<div class="roadSafeFrame">
+	<ul>
+		<li><span class="wordsLeft">颜色</span></li>
+		<li><p class="color_red color_size"></p></li>
+		<li><p class="color_yellow color_size"></p></li>
+		<li><p class="color_green color_size"></p></li>
+		<li><p class="color_blue color_size"></p></li>
+		<li><p class="color_black color_size"></p></li>
+	</ul>
+	<ul>
+		<li><span class="wordsLeft">风险等级</span></li>
+		<li><span class="wordsLeft1">V级</span></li>
+		<li><span class="wordsLeft1">IV级</span></li>
+		<li><span class="wordsLeft1">III级</span></li>
+		<li><span class="wordsLeft1">II级</span></li>
+		<li><span class="wordsLeft1">I级</span></li>
+	</ul>
+	<ul>
+		<li><span class="wordsLeft">风险状况</span></li>
+		<li><span class="wordsLeft2">高</span></li>
+		<li><span class="wordsLeft1">较高</span></li>
+		<li><span class="wordsLeft2">中</span></li>
+		<li><span class="wordsLeft1">较低</span></li>
+		<li><span class="wordsLeft2">低</span></li>
+	</ul>
+</div>
+<div class="zhao_left" style="display: none;"></div>
+<div class="zhao1" style="display: none;"></div>
+<div class="zhao" style="display: none;"></div>
+<div id="loading"><img src="images/loading.gif"/></div> 
+<!--系统主届面-->
+<div class="container-fluid">
+	<div class="blowdownFrame" id="thermographyFrame">
+			<p class="Title">地图图层</p>
+			<div class="environmentLayer" id="thermographyLayer">
+				<ul class="environmentLayer_Ul" id="thermography_Ul">
+					<li>
+						<p class="environmentLayer_Ul_p"><span>地图图层</span></p>
+						<ul class="environmentLayer_Ul_u1">
+							<li><label  style="color: red" for="dynamic"><input type="checkbox" name="" id="dynamic" checked="checked" /><span>动态安全风险</span></label></li>
+							<li><label for="statics"><input type="checkbox" name="" id="statics" /><span>静态安全风险</span></label></li>
+							<li><label for="weather_roads"><input type="checkbox" name="" id="weather_roads" /><span>道路天气安全风险</span></label></li>
+						</ul>
+					</li>
+					<li>
+						<p class="environmentLayer_Ul_p"><span>设备图层</span></p>
+						<ul class="environmentLayer_Ul_u1">
+							<li><label for="weather_stations"><input type="checkbox" name="" id="weather_stations" /><span>气象站点</span></label></li>
+							<li>
+                                <label for="Signboard"><input type="checkbox" name="Signboard" id="Signboard" /><span>标示标牌</span></label> 
+                            </li>
+							<li><label for="weather_video"><input type="checkbox" name="" id="weather_video" /><span>视频监控</span></label></li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+			<p class="Title">气象站管理</p>
+			<div class="environmentList" id="thermographyList">
+				<p class="environmentList_Ul_p"><span>站点列表</span><img src="images/add1.png" class="addEnvironmentStation" onclick="drawPoints_Station(),play_up_features(featuresLayer)"></p>
+				<ul class="environmentList_Ul" >
+					
+				</ul>
+			</div>
+			<p class="Title">气象站站动态数据</p>
+			<div class="environmentData" id="weatherData">
+				<ul class="environmentData_Ul" id="weatherData_Ul">
+					<li><span id="airTemperature"></span>:<span id="airTemperature_val"></span><span class="unit"><sup>。</sup>C</span></li>
+					<li><span id="relativeHumidity"></span>:<span id="relativeHumidity_val"></span><span class="unit">%</span></li>
+					<li><span id="windSpeed"></span>:<span id="windSpeed_val"></span><span class="unit">m/s</span></li>
+					<li><span id="windDirection"></span>:<span id="windDirection_val"></span></li>
+					<li><span id="atmosphere"></span>:<span id="atmosphere_val"></span><span class="unit">MPa</span></li>
+					<li><span id="conditionScore"></span>:<span id="conditionScore_val"></span></li>
+					<li><span id="pavementTemperature"></span>:<span id="pavementTemperature_val"></span><span class="unit"><sup>。</sup>C</span></li>
+					<li><span id="freezingTemperature"></span>:<span id="freezingTemperature_val"></span><span class="unit"><sup>。</sup>C</span></li>
+					<li><span id="coveringThickness"></span>:<span id="coveringThickness_val"></span><span class="unit">mm</span></li>
+					<li><span id="weatherType"></span>:<span id="weatherType_val"></span></li>
+					<li><span id="precipitation"></span>:<span id="precipitation_val"></span><span class="unit">mm</span></li>
+				</ul>
+			</div>
+		</div>
+	<div id="mainbody">
+		<div id="map" roadFlag="动态安全"></div>
+		<div id="right_environment" class="jt_node_choice all_tc">
+            <ul>
+            	<li onclick="unFeatureSelect(),emptyStation_information()" class="addlook">添加气象观测站</li>
+            	<li onclick="unFeatureSelect()">删除新建气象站点</li>
+            </ul>
+        </div>
+		 <footer></footer> 
+	</div>
+</div>
+</body>
+<script src = 'js/jquery.js'></script>
+<script src = 'javaScript/height.js'></script>
+<script src = 'javaScript/repu_map.js'></script>
+<script src = 'javaScript/chartsData.js'></script>
+<script type="text/javascript" src="js/echarts.common.min.js"></script>
+</html>

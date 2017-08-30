@@ -1,0 +1,335 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title></title>
+	<link href='css/bootstrap.min.css' rel='stylesheet' />
+    <link href='css/bootstrap-responsive.min.css' rel='stylesheet' />
+    <link href='css/dtjt.css' rel='stylesheet' />
+    <link href='css/mystyle.css' rel='stylesheet' />
+    <link href='css/blowdown.css' rel='stylesheet' />
+    <link href='css/dtjt.css' rel='stylesheet' />
+	<script src = 'libs/SuperMap.Include.js'></script>
+	<script type="text/javascript">
+	var supermap,vector,selectFeature,selectVector,marker0,marker1,marker2,marker3,marker4,PointVector,villageVector,vectorRoad,heatMapCross;
+                function init(){
+					supermap = new SuperMap.Map("map", {
+		                controls : [ new SuperMap.Control.Navigation(),
+		                    new SuperMap.Control.MousePosition() ],
+		                eventListeners:{"movestart":function(){
+				                    $(".all_tc").css("visibility","hidden");
+				                },
+				                "click":function(){
+				                    $(".all_tc").css("visibility","hidden");
+				                 }}
+		            });
+					layer = new SuperMap.Layer.CloudLayer();
+					vector = new SuperMap.Layer.Vector("markerLayer2");//路网
+					villageVector = new SuperMap.Layer.Vector("markerLayer3");//小区
+					PointVector = new SuperMap.Layer.Vector("PointVector");//交通瓶颈
+					marker0 = new SuperMap.Layer.Markers("marker");//诱导热点
+					marker1 = new SuperMap.Layer.Markers("marker1");//人员
+					marker2 = new SuperMap.Layer.Markers("marker2");//巡逻车
+					marker3 = new SuperMap.Layer.Markers("marker3");//公交
+					marker4 = new SuperMap.Layer.Markers("marker4");//其他
+					heatMapCross = new SuperMap.Layer.HeatMapLayer("heatMap",//路口节点尾气
+                    {
+                        "radius":20,
+                        "featureWeight":"value",
+                        "featureRadius":"geoRadius"
+                    });
+					supermap.addLayers([layer,marker0,marker1,marker2,marker3,marker4,PointVector,heatMapCross,vector,villageVector]);
+					setCenter();
+		            selectFeature = new SuperMap.Control.SelectFeature(villageVector,{
+                    		selectStyle:{ 
+                    				fillColor:"blue",
+                    				fillOpacity:"0.6",
+                    				stroke:"true",
+                    				strokeColor:"#EE9900",
+                    				labelSelect:"true",
+                				},
+                			callbacks:{"click":getleadVillageId,"rightclick":TCR_rightClick}
+		                }); 
+		            supermap.addControl(selectFeature);
+		            selectFeature.activate();
+		            vectorRoad = new SuperMap.Control.SelectFeature(vector,{//路网的控件
+							callbacks: {}
+						});	
+					supermap.addControl(vectorRoad);
+					vectorRoad.activate();
+		            queryRoadNetFeature();
+					queryVillage();
+					var divTxt=document.getElementById("DD");
+					// divTxt.innerHTML=yy+"-"+timeChange(yue)+"-"+timeChange(ri);
+					divTxt.innerHTML='2016-04-01';
+                }
+    </script>
+</head>
+<body onLoad = "init()">
+<div class="container-fluid">
+<div id="loading"><img src="images/loading.gif"/></div>
+<div class="zhao" style="display: none;"></div>
+<div class="zhao1" style="display: none;"></div>
+<!--运行状态图例-->
+<div class="describeFrame" style="display: none">
+	<ul class="describeUl">
+		<li><p class="b_green b_size"></p><span>畅通</span></li>
+		<li><p class="b_yellow b_size"></p><span>基本畅通</span></li>
+		<li><p class="b_orange b_size"></p><span>轻度拥堵</span></li>
+		<li><p class="b_red b_size"></p><span>中度拥堵</span></li>
+		<li><p class="b_purple b_size"></p><span>严重拥堵</span></li>
+	</ul>
+</div>
+<!--饱和度图例-->
+<div class="describeFrame_saturation" style="display: none">
+	<ul class="describeUl">
+		<li><p class="b_size_line1 b_size_public"></p><span>小于0.25</span></li>
+		<li><p class="b_size_line2 b_size_public"></p><span>0.25-0.5</span></li>
+		<li><p class="b_size_line3 b_size_public"></p><span>0.5-0.75</span></li>
+		<li><p class="b_size_line4 b_size_public"></p><span>0.75-1</span></li>
+		<li><p class="b_size_line5 b_size_public"></p><span>大于1</span></li>
+	</ul>
+</div>
+<div class="describeFrame_safe" style="display: none">
+	<p class="describeFrame_safe_p">风险状况</p>
+	<ul class="describeUl_safe">
+		<li><p class="b_red b_size"></p><span>高</span></li>
+		<li><p class="b_yellow b_size"></p><span>较高</span></li>
+		<li><p class="b_green b_size"></p><span>中</span></li>
+		<li><p class="b_blue b_size"></p><span>较低</span></li>
+		<li><p class="b_black b_size"></p><span>低</span></li>
+	</ul>
+</div>
+<div class="describeFrame_gas" style="display: none">
+	<ul class="describeUl">
+		<li><p class="b_green b_size"></p><span>等级V</span></li>
+		<li><p class="b_yellow b_size"></p><span>等级IV</span></li>
+		<li><p class="b_orange b_size"></p><span>等级III</span></li>
+		<li><p class="b_red b_size"></p><span>等级II</span></li>
+		<li><p class="b_purple b_size"></p><span>等级I</span></li>
+	</ul>
+</div>
+<div id="mainbody">
+	<div class="blowdownFrame" id="leadFrame">
+			<p class="Title">图层</p>
+			<div class="environmentLayer" id="leadLayer">
+				<ul class="environmentLayer_Ul" id="thermography_Ul">
+					<!-- <li>
+						<p class="environmentLayer_Ul_p"><span>地图图层</span></p>
+						<ul class="environmentLayer_Ul_u1">
+							<li><label for="Layer_ipt1"><input type="checkbox" name="" id="Layer_ipt1" /><span>交通瓶颈图</span></label></li>
+							<li><label for="Layer_ipt2"><input type="checkbox" name="" id="Layer_ipt2" /><span>排队长度图</span></label></li>
+							<li><label for="Layer_ipt3"><input type="checkbox" name="" id="Layer_ipt3" /><span>交通小区</span></label></li>
+						</ul>
+					</li> -->
+					<li>
+						<p class="environmentLayer_Ul_p"><span>热点与样本</span></p>
+						<ul class="environmentLayer_Ul_u1">
+							<li><label for="Layer_ipt1"><input type="checkbox" name="" id="Layer_ipt1" /><span>诱导热点</span></label></li>
+							<li><label for="Layer_ipt2"><input type="checkbox" name="" id="Layer_ipt2" /><span>样本车辆</span></label></li>
+						</ul> 
+					</li>
+				</ul>
+			</div>
+			<p class="Title">自动诱导阈值</p>
+			<div class="environmentData" id="leadData">
+				<div class="leadChange" id="leadChangeFrame">
+					<ul id="leadRoadCross">
+						<li class="leadChangeLi1"><label for="leadCrossSet"><input type="checkBox" id="leadCrossSet"/><span class="setWorld">路口瓶颈阈值设置</span></label></li>
+						<li class="leadChangeLi2"><span class="setWorld1">饱和程度大于</span><input type="text" value="" id="leadCross_ipt1"/></li>
+						<li class="leadChangeLi2"><span class="setWorld1">排队长度大于</span><input type="text" value="" id="leadCross_ipt2"/><span style="margin-left: 3px;font-size: 0.8em">米</span></li>
+					</ul>
+					<ul id="leadRoad">
+						<li class="leadChangeLi1"><label for="leadRoadSet"><input type="checkBox" id="leadRoadSet"/><span class="setWorld">路段瓶颈阈值设置</span></label></li>
+						<li class="leadChangeLi2"><span class="setWorld1">饱和程度大于</span><input type="text" value="" id="leadRoad_ipt1"/></li>
+						<li class="leadChangeLi2"><span class="setWorld1">状态处于</span>
+							<select id="leadRoadSelect">
+								<option>1-轻度拥堵</option>
+								<option>2-中度拥堵</option>
+								<option>3-严重拥堵</option>
+							</select>
+						</li>
+					</ul>
+					<ul id="leadArea">
+						<li class="leadChangeLi1"><label for="leadAreaSet"><input type="checkBox" id="leadAreaSet"/><span class="setWorld">区域拥堵阈值设置</span></label></li>
+						<li class="leadChangeLi2"><span class="setWorld1">拥堵指数大于</span><input type="text" value="" id="leadArea_ipt1"/></li>
+					</ul>
+				</div>
+			</div>
+			<p class="Title">主动疏导管理</p>
+			<div class="environmentList" id="leadList">
+				<p class="environmentList_Ul_p"><span>疏导区域</span><img src="images/add1.png" class="addEnvironmentStation" onclick="addleadList()"></p>
+				<ul class="environmentList_Ul" ></ul>
+			</div>
+		</div>
+	<div id="map" roadFlag="运行状态">
+		<ul class="roadStates_ul roadUl1"><!--功能按钮1-->
+			<li class="roadStates_ul_li1 tps"><p class="roadStates_ul_p1 radiusState" onclick="partLeftClick(1)">运行状态</p><span class="roadStates_ul_span1">路网运行状态</span></li>
+			<li class="roadStates_ul_li2 vic"><p class="roadStates_ul_p2 radiusState" onclick="partLeftClick(2)">饱和程度</p><span class="roadStates_ul_span2">路网饱和程度</span></li>
+			<li class="roadStates_ul_li3 bottleneck"><p class="roadStates_ul_p3 radiusState" onclick="partLeftClick(3)">拥堵瓶颈</p><span class="roadStates_ul_span3">路口拥堵瓶颈</span></li>
+			<li class="roadStates_ul_li4 tpi"><p class="roadStates_ul_p4 radiusState" onclick="partLeftClick(4)">拥堵指数</p><span class="roadStates_ul_span4">区域拥堵指数</span></li>
+		</ul>
+		<ul class="roadStates_ul roadUl2">
+			<li class="roadStates_ul_li1 dynamic"><p class="roadStates_ul_p1 radiusState" onclick="partLeftClick(5)">动态安全</p><span class="roadStates_ul_span1">动态安全风险</span></li>
+			<li class="roadStates_ul_li2 ice"><p class="roadStates_ul_p2" onclick="partLeftClick(6)">天气安全</p><span class="roadStates_ul_span2">天气安全风险</span></li>
+		</ul>
+		<ul class="roadStates_ul roadUl3"><!--功能按钮1-->
+			<li class="roadStates_ul_li1 move"><p class="roadStates_ul_p1" onclick="partLeftClick(7)">道路尾气</p><span class="roadStates_ul_span1">道路尾气污染</span></li>
+			<li class="roadStates_ul_li1 cross"><p class="roadStates_ul_p2" onclick="partLeftClick(8)">路口尾气</p><span class="roadStates_ul_span1">路口尾气污染</span></li>
+		</ul>
+		<ul class="replace">
+			<li class="li1"><p><img src="images/logo/leadRed/1.png" style="margin-top: 6px;width: 40px;height: 40px" onclick="changeFooterImg(1)"></p><span class="ss1">交通疏堵诱导</span></li>
+			<li class="li2"><p><img src="images/logo/leadBlue/2.png" onclick="changeFooterImg(2)"></p><span class="ss2">行驶安全诱导</span></li>
+			<li class="li3"><p><img src="images/logo/leadBlue/3.png" onclick="changeFooterImg(3)"></p><span class="ss3">尾气减排诱导</span></li>
+			<li class="li4"><p><img src="images/logo/leadBlue/4.png" style="margin-top: 6px;width: 40px;height: 40px" onclick="changeFooterImg(4)"></p><span class="ss4">停车空位诱导</span></li>
+		</ul>
+	</div>
+	<div id="ActiveLead" class="jt_node all_tc">
+        <ul><li onclick="setActiveLead()" class="look">查看所选主动诱导属性</li></ul>
+    </div>
+	<div id="footer" >
+	        <div class="f_left" id="f_l">
+	            <p class="pp1"><span id="DD" data=""></span></p>
+	            <p class="pp2 reduce">
+	                <input type="button" name="more1" title="日期选择"  class="more1 choice_time" id="list_time" value="..." onClick="jeDate({dateCell:'#DD',isTime:true,format:'YYYY-MM-DD'})"/>
+	                <input type="button" name="ls_qd"  id="ls_enter" title="实时"/>
+	                <input type="button" name="reduce" value="－" id="reduce_btn"/>
+	            </p>
+	        </div>
+	        <div class="f_mid" >
+	            <div id="myTimeline">
+	                <ul class="timeline">  
+	                  <li>  
+	                      <span class="start_time">00</span>
+	                      <span class="kd"></span>
+	                  </li>  
+	                  <li>  
+	                      <span class="kd"></span>
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="end_time">24</span>
+	                    <span class="kd"></span> 
+	                  </li>  
+	                </ul> 
+	                <div class="vernier" id="yb">
+	                    <time id="vernier_time" >12:30</time>
+	                </div> 
+	            </div>
+	            <div class="rd">
+	                <span class="s1"></span>
+	                <span class="s2"></span>
+	                <span class="s3"></span>
+	                <span class="s2"></span>
+	                <span class="s1"></span>
+	                <span class="s1"></span>
+	                <span class="s3"></span>
+	                <span class="s2"></span>
+	                <span class="s1"></span>
+	                <span class="s3"></span>
+	                <span class="s1"></span>
+	                <span class="s2"></span>
+	                <span class="s3"></span>
+	                <span class="s2"></span>
+	                <span class="s1"></span>
+	                <span class="s1"></span>
+	                <span class="s3"></span>
+	                <span class="s2"></span>
+	                <span class="s2"></span>
+	                <span class="s3"></span>
+	                <span class="s1"></span>
+	                <span class="s1"></span>
+	                <span class="s2"></span>
+	                <span class="s1"></span>
+	            </div>
+	        </div>
+	        <div class="f_right">
+	            <!-- <p class="pp1"><span class="spa1">小时指数:</span><span class="spa2">9</span></p> -->
+	            <p class="pp2 add"><input type="button" name="add" value="+" id="yc">
+	                    <input type="button" name="yc_qd"  id="yc_enter" title="快放"/>
+	                    <!--<span class="more">...</span>-->
+	                    <input type="button" name="more"  class="more" value="..." title="时间刻度"/>
+	                    <select name="rule" id="rule">
+	                        <option>5Min</option>
+	                        <option>10Min</option> 
+	                        <option>30Min</option>
+	                        <option>60Min</option> 
+	                    </select>
+	            </p>
+	            <div style="clear: both;"></div>
+	        </div>
+	</div>
+</div>
+</div>
+</body>
+<script src = 'js/jquery.js'></script>
+<script src="js/jedate/jedate.js"></script>	
+<script src = 'javaScript/youdao_map.js'></script>
+<script src = 'javaScript/dtjtMap.js'></script>
+<script src = 'javaScript/dtjt.js'></script>
+<script src = 'javaScript/height.js'></script>
+<script src="js/jedate/jedate.js"></script>
+<script src="js/echarts.common.min.js"></script>
+</html>

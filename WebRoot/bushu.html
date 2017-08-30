@@ -1,0 +1,240 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title></title>
+	<link href='css/bootstrap.min.css' rel='stylesheet' />
+    <link href='css/bootstrap-responsive.min.css' rel='stylesheet' />
+    <link href='css/mystyle.css' rel='stylesheet' />
+    <link href='css/blowdown.css' rel='stylesheet' />
+	<script src = 'libs/SuperMap.Include.js'></script>	
+	<script src = 'js/jquery.js'></script>
+	<script src = 'javaScript/height.js'></script>
+	<script src="javaScript/click.js"></script>
+	<script src="javaScript/bushu_map.js"></script>
+     <script type="text/javascript">
+     		var supermap,layer,vector,markerlayer,markerlayer1,markerlayer2,markerlayer3,markerlayer4,markerlayer5,featuresLayer1,featuresLayer2,featuresLayer3,featuresLayer4,featuresLayer5,featuresLayer6;
+                function init(){
+                   supermap = new SuperMap.Map("map", {
+		                controls : [ new SuperMap.Control.Navigation(),
+		                    new SuperMap.Control.Zoom(),
+		                    new SuperMap.Control.MousePosition()
+		                   ],
+		                eventListeners:{"movestart":function(){
+		                    $(".all_tc").css("visibility","hidden");
+		                },
+		                "click":function(){
+		                    $(".all_tc").css("visibility","hidden");
+		                 }}
+		            });
+					layer = new SuperMap.Layer.CloudLayer();
+					vector = new SuperMap.Layer.Vector("vector");//路网
+					supermap.addLayers([layer]);
+					setCenter();
+					supermap.events.on({"click":addMarker2Map});
+					createCheck();
+					
+                }
+    </script>
+</head>
+<body onLoad = "init()">
+<div class="zhao_left" style="display: none;"></div>
+<!--系统主届面-->
+<div class="container-fluid">
+<div class="zhao" style="display: none;"></div>
+	<div id="mainbody">
+		<div class="list_choice" id="list_left">
+            <p class="list_title">图层管理</p>
+            <div class="list2  over_hidden" id="list2">
+                <ul class="u1" id="uu1">
+                    <li><p><span>路网设备</span></p>
+                        <ul class="u2 module1"></ul>
+                    </li>
+                    <li>
+                        <p><span>人员管理</span></p>
+                        <ul class="u2 module2"></ul>
+                    </li>
+                   <li><p><span>车辆管理</span></p>
+                        <ul class="u2 module3"></ul>
+                    </li>
+                    <li><p><span>物资管理</span></p>
+                        <ul class="u2 module4"></ul>
+                    </li>
+                </ul>
+            </div>
+                <p class="list_title">对象参数</p>
+            <div class="list3" id="list3">
+                <ul class="u3" id="uu3">
+                    <li><span id="pro1"></span><span id="pro2"></span></li>
+                    <li><span id="pro3"></span><span id="pro4"></span></li>
+                    <li><span id="pro5"></span><span id="pro6"></span></li>
+                    <li><span id="pro7"></span><span id="pro8"></span></li>
+                    <li><span id="pro9"></span><span id="pro10"></span></li> 
+                </ul>
+            </div>
+        </div>
+		<div id="map"></div>
+		<!-- <div style="clear: both;"></div> -->
+		<div id="policeMan" class="jt_node_choice all_tc">
+            <ul>
+            	<li class="borderLine look" onclick="getMarkerAttr()">查看所选管理人员信息</li>
+            	<li onclick="deleteDeviceMarker()" class="borderLine look">解除所选设备</li>
+            	<li onclick="emptyMan_information()" class="addlook">添加管理人员信息</li>
+            	<li class="addlook removeAddlook" onclick="deletePoint(320)">删除管理人员信息</li>
+            </ul>
+        </div>
+		<div id="ProwlCar" class="jt_node_choice all_tc">
+            <ul>
+            	<li class="borderLine look" onclick="getMarkerAttr()">查看所选巡逻车辆信息</li>
+            	<li onclick="deleteDeviceMarker()" class="borderLine look">解除所选设备</li>
+            	<li class="addlook" onclick="emptyProwlCar_information()">添加巡逻车辆信息</li>
+            	<li class="addlook removeAddlook" onclick="deletePoint(340)">删除巡逻车辆信息</li>
+            </ul>
+        </div>
+
+        <div id="Bus" class="jt_node_choice all_tc">
+            <ul>
+            	<li class="borderLine look" onclick="getMarkerAttr()">查看所选公交优先信息</li>
+            	<li onclick="deleteDeviceMarker()" class="borderLine look">解除所选设备</li>
+            	<li class="addlook" onclick="emptyBus_information()">添加公交优先信息</li>
+            	<li class="addlook removeAddlook" onclick="deletePoint(340)">删除公交优先信息</li>
+            </ul>
+        </div>
+
+        <div id="Others" class="jt_node_choice all_tc">
+            <ul>
+            	<li class="borderLine look" onclick="getMarkerAttr()">查看所选其他优先信息</li>
+            	<li onclick="deleteDeviceMarker()" class="borderLine look">解除所选设备</li>
+            	<li class="addlook" onclick="emptyOther_information()">添加其他优先信息</li>
+            	<li class="addlook removeAddlook" onclick="deletePoint(340)">删除其他优先信息</li>
+            </ul>
+        </div>
+
+        <div id="DangerousCars" class="jt_node_choice all_tc">
+            <ul>
+            	<li class="borderLine look" onclick="getMarkerAttr()">查看所选危险品车辆信息</li>
+            	<li onclick="deleteDeviceMarker()" class="borderLine look">解除所选设备</li>
+            	<li class="addlook" onclick="emptyDangerousCar_information()">添加危险品车辆信息</li>
+            	<li class="addlook removeAddlook" onclick="deletePoint(340)">删除危险品车辆信息</li>
+            </ul>
+        </div>
+
+        <div id="Materials" class="jt_node_choice all_tc">
+            <ul><li class="borderLine look" onclick="getMarkerAttr()">查看所选物资存放信息</li>
+            	<li onclick="deleteDeviceMarker()" class="borderLine look">解除所选设备</li>
+                <li class="addlook" onclick="emptyMaterial()">添加管理物资信息</li>
+                <li class="addlook removeAddlook" onclick="deletePoint(330)">删除管理物资信息</li>
+            </ul>
+        </div>
+
+        <!--信号控制-->
+        <div id="signal_light" class="jt_node_choice all_tc">
+            <ul><li onclick="getMarkerAttr()" class="borderLine">查看所选信号机属性</li>
+            	<li onclick="deleteDeviceMarker()" class="borderLine look">解除所选设备</li>
+            </ul>
+        </div>
+        <!--路段车流-->
+        <div id="roads_traffic" class="jt_node_choice all_tc">
+            <ul>
+                <li class="borderLine look" onclick="getMarkerAttr()">查看所选车检器属性</li>
+                <li class="look" onclick="ajax_MarkerDatas(6)">查看车检器交通数据</li>
+                <li onclick="detailAttr(6,[])" class="addlook">添加车检器属性</li>
+                <li onclick="deleteDeviceMarker()" class="borderLine look">解除所选设备</li>
+                <li class="addlook removeAddlook">删除新建路段车检器</li>
+            </ul>
+        </div>
+        <!--路口车流-->
+        <div id="signal_traffic" class="jt_node_choice all_tc">
+            <ul><li class="borderLine look" onclick="getMarkerAttr()">查看所选车检器属性</li>
+                <li class="borderLine look" onclick="ajax_MarkerDatas(7,'路口')">查看路口转向数据</li>
+                <li class="borderLine look" onclick="ajax_MarkerDatas(7,'出口')">查看出口流量数据</li>
+                <li onclick="detailAttr(7,[])" class="addlook">添加车检器属性</li>
+                <li onclick="deleteDeviceMarker()" class="borderLine look">解除所选设备</li>
+                <li class="addlook removeAddlook">删除新建路口车检器</li>
+            </ul>
+        </div>
+        <div id="trip_time" class="jt_node_choice all_tc">
+            <ul>
+                <li class="borderLine look" onclick="getMarkerAttr()">查看所选设备属性</li>
+                <li class="look" onclick="ajax_MarkerDatas(8)">查看旅行时间样本量</li>
+                <li onclick="detailAttr(8,[])" class="addlook">添加车检器属性</li>
+                <li onclick="deleteDeviceMarker()" class="borderLine look">解除所选设备</li>
+                <li class="addlook removeAddlook">删除新建路段车检器</li>
+            </ul>
+        </div>
+        <div id="weather_forecast" class="jt_node_choice all_tc">
+            <ul><li class="borderLine look" onclick="getMarkerAttr()">查看所选气象观测站属性</li>
+                <li class="borderLine look" onclick="ajax_MarkerDatas(9)">查看气象观测站数据</li>
+                <li onclick="deleteDeviceMarker()" class="borderLine look">解除所选设备</li>
+                <li onclick="detailAttr(9,[])" class="addlook">添加所选气象观测站属性</li>
+                <li class="addlook removeAddlook" >删除新建气象观测站</li>
+            </ul>
+        </div>
+        <div id="lead_show" class="jt_node_choice all_tc">
+            <ul><li class="borderLine look" onclick="getMarkerAttr()">查看所选诱导显示屏属性</li>
+                <li class="borderLine look" onclick="ajax_MarkerDatas(10)">查看诱导显示屏内容</li>
+                <li onclick="detailAttr(10,[])" class="addlook">添加所选诱导显示属性</li>
+                <li onclick="deleteDeviceMarker()" class="borderLine look">解除所选设备</li>
+                <li class="addlook removeAddlook" >删除新建诱导显示</li>
+            </ul>
+        </div>
+        <div id="monitor" class="jt_node_choice all_tc">
+            <ul><li class="borderLine look" onclick="getMarkerAttr()">查看所选视频摄像机属性</li>
+                <li class="borderLine look" onclick="ajax_MarkerDatas(11)">查看实时摄像机图像</li>
+                <li onclick="detailAttr(11,[])" class="addlook">添加实时摄像机属性</li>
+                <li onclick="deleteDeviceMarker()" class="borderLine look">解除所选设备</li>
+                <li class="addlook removeAddlook" >删除新建实时摄像机</li>
+            </ul>
+        </div>
+        <div id="blowoff_station" class="jt_node_choice all_tc">
+            <ul>
+                <li class="borderLine  look" onclick="getMarkerAttr()">查看所选排放站点属性</li>
+                <li class="borderLine  look" onclick="EnvironmentDatas()">查看排放站点观测数据</li>
+                <li onclick="deleteDeviceMarker()" class="borderLine look">解除所选设备</li>
+                <li onclick="detailAttr(12,[])" class="addlook">添加所选排放站点属性</li>
+                <li class="addlook removeAddlook" >删除新建排放站点</li>
+            </ul>
+        </div>
+		<!-- <footer>
+			<ul>
+				<li class="f_li1"><label for="footer_policeMan"><input type="checkbox" id="footer_policeMan"><img src="images/float/hui/4.png" /><p>管理人员</p></label>
+				</li>
+				<li class="f_li2"><label for="footer_ProwlCar"><input type="checkbox" id="footer_ProwlCar"><img src="images/float/hui/1.png" /><p>巡逻车辆</p></label>
+				</li>
+				<li class="f_li3"><label for="footer_Bus"><input type="checkbox" id="footer_Bus"><img src="images/float/hui/2.png" /><p>公交优先</p></label>
+				</li>
+				<li class="f_li4"><label for="footer_Others"><input type="checkbox" id="footer_Others"><img src="images/float/hui/3.png" /><p>其他优先</p></label>
+				</li>
+				<li class="f_li5"><label for="footer_DangerousCars"><input type="checkbox" id="footer_DangerousCars"><img src="images/float/hui/5.png" /><p>危险品车辆</p></label>
+				</li>
+				<li class="f_li6"><label for="footer_Materials"><input type="checkbox" id="footer_Materials"><img src="images/float/hui/2.png" /><p>物资存放</p></label>
+				</li>
+			</ul>
+		</footer> -->
+	</div>
+</div>
+</body>
+<!-- <script src="javaScript/footer_click.js"></script> -->
+<script type="text/javascript">
+// 		function steupPoint_show(ele){
+// 			$(ele).toggleClass("setup_btnRed");
+// 			$(".steupPoint").toggle();
+// 		}
+    $("#uu1 p").click(function(){
+        $(this).toggleClass("arrow_p");
+        $(this).next(".u2").children("li").fadeToggle();
+    });
+$(document).ready(function() { 
+    ratioHeight('list_left','list2',3,2);
+    ratioHeight('list_left','list3',3,1);
+    
+});
+$(window).resize(function(){
+    ratioHeight('list_left','list2',3,2);
+    ratioHeight('list_left','list3',3,1);
+})
+</script>
+<script src = 'javaScript/chartsData.js'></script>
+<script src="js/echarts.common.min.js"></script>
+<script src="js/jedate/jedate.js"></script>
+</html>

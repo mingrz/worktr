@@ -1,0 +1,176 @@
+package com.itsjn.dao;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+
+import net.sf.json.JSONObject;
+
+import com.itsjn.config.ServerURL;
+import com.itsjn.entity.CarGPS;
+import com.itsjn.util.WebClient;
+
+import java.sql.Connection;     //导入数据库连接对象
+import java.sql.DriverManager;  //导入数据库驱动管理对象
+import java.sql.ResultSet;      //导入数据记录集对象
+import java.sql.SQLException;   //导入数据SQL操作异常对象
+import java.sql.Statement;      //导入SQL操作接口对象
+
+
+
+
+public class RoadCongDao {
+
+	/**
+	 * 
+	 * @return
+	 * @throws ClassNotFoundException 
+	 */
+	public  String  GetMaxMinTime(Connection conn)  
+	{
+		String strResult = "";
+
+		String sql; //执行数据sql查询操作的字符串
+		//Connection conn; //数据库连接变量
+		Statement st; //数据库操作对象
+		ResultSet rs; //数据记录集对象
+	
+		try {
+		    st = conn.createStatement();
+		    sql = "select linkid from cslg_arc where Touches( GeomFromText('POLYGON((113.0065986 28.06035562,113.0066006 28.06035562,113.0066006 28.060353619999997,113.0065986 28.060353619999997,113.0065986 28.06035562))'),ogc_geom )";
+		    
+		    //只要修改这句，就可以实现各种查询操作
+		    rs=st.executeQuery(sql); //执行数据查询
+
+		    while(rs.next())
+		    {
+		        System.out.println(rs.getString(1)); //获得数据表test中第1个字段的数据，该字段为字符串类型
+		        //System.out.println(rs.getString(2)); //获得数据表test中第2个字段的数据，该字段为字符串类型
+		     }
+		     rs.close(); //关闭数据记录集
+		     //conn.close();    //关闭数据库连接
+		 } catch (SQLException e) {
+		     System.out.println("Error:"+e.toString()+e.getMessage());
+		 }
+		 
+		 /*
+		 catch( ClassNotFoundException e)
+		 {
+			 
+		 }
+		 */
+		 
+		return strResult;
+	}
+	
+	/**
+	 * @param strStartTime
+	 * @param strEndTime
+	 * @return
+	 */
+	public  String  GetData( Connection conn,String strPtX,String strPtY )
+	{
+		String strResult = "";
+
+		String sql; //执行数据sql查询操作的字符串
+		//Connection conn; //数据库连接变量
+		Statement st; //数据库操作对象
+		ResultSet rs; //数据记录集对象
+		
+		String lt,rt,lb,rb;
+		double ptx,pty,r=0.000001;
+		ptx=Double.parseDouble(strPtX);
+		pty=Double.parseDouble(strPtX);
+		
+		lt=String.valueOf(ptx-r)+" "+String.valueOf(pty+r);
+		rt=String.valueOf(ptx+r)+" "+String.valueOf(pty+r);
+		lb=String.valueOf(ptx-r)+" "+String.valueOf(pty-r);
+		lb=String.valueOf(ptx+r)+" "+String.valueOf(pty-r);
+	
+		try {
+		    st = conn.createStatement();
+		    sql = "select linkid from cslg_arc where Touches( GeomFromText('POLYGON((113.0065986 28.06035562,113.0066006 28.06035562,113.0066006 28.060353619999997,113.0065986 28.060353619999997,113.0065986 28.06035562))'),ogc_geom )";
+		    
+		    //只要修改这句，就可以实现各种查询操作
+		    rs=st.executeQuery(sql); //执行数据查询
+
+		    while(rs.next())
+		    {
+		        System.out.println(rs.getString(1)); //获得数据表test中第1个字段的数据，该字段为字符串类型
+		        //System.out.println(rs.getString(2)); //获得数据表test中第2个字段的数据，该字段为字符串类型
+		     }
+		     rs.close(); //关闭数据记录集
+		     //conn.close();    //关闭数据库连接
+		 } catch (SQLException e) {
+		     System.out.println("Error:"+e.toString()+e.getMessage());
+		 }
+		 
+		return strResult;
+	}
+/*	{
+		String strResult = "";
+		JSONObject jsobject = new JSONObject();
+		String strXML = "";
+		String strURL = ServerURL.CAR_DATA_BASE_URL + "&ty=0&st=" + strStartTime + "&lb="+strLB+"&rt="+strRT;
+		//String strURL = ServerURL.CAR_DATA_BASE_URL + "&ty=0&st=" + strStartTime + "&ed=" + strEndTime+"&lb=1&rt=1";
+		Map<String, List<CarGPS>> gpsMap = new HashMap<String, List<CarGPS> >();
+		List<CarGPS> gpslist = null;
+		CarGPS gps = null;
+		String strTime = "";
+		System.out.println( strURL );
+		try {
+			WebClient wc = new WebClient();
+			strXML = wc.getContent(strURL, "UTF-8", "UTF-8");
+			SAXReader reader = new SAXReader();
+			Document doc = reader.read(new ByteArrayInputStream(strXML
+					.getBytes("UTF-8")));
+			Element elem = doc.getRootElement();
+			
+			String ss=elem.attributeValue("count");
+			int nCount = Integer.valueOf( elem.attributeValue("count") ).intValue();
+			if (nCount > 0) 
+			{
+
+				List<Element> elems = elem.elements("LOC");
+				Element e;
+				Integer nTimes = 0;
+				for (int i = 0; i < elems.size(); i++) {
+
+					gps = new CarGPS();
+					e = elems.get(i);
+					gps.setAngle(Integer.valueOf(e.attributeValue("an")));
+					gps.setSpeed(Integer.valueOf(e.attributeValue("sp")));
+					gps.setdX(Double.valueOf(e.attributeValue("lat")) / 1000000);
+					gps.setdY(Double.valueOf(e.attributeValue("lon")) / 1000000);
+					gps.setId(Integer.valueOf(e.attributeValue("id")));
+
+					strTime = e.attributeValue("time");
+					gpslist = gpsMap.get(strTime);
+					if (gpslist != null) {
+						gpslist.add(gps);
+					} else {
+						gpslist = new ArrayList<CarGPS>();
+						gpslist.add(gps);
+						gpsMap.put(strTime, gpslist);
+					}
+				}
+			}
+		} catch (DocumentException ex) {
+			System.out.println("GetMaxMinTime:" + ex.getMessage());
+		} catch (IOException ioex) {
+			System.out.println("GetMaxMinTime:" + ioex.getMessage());
+		}
+		jsobject.element( "total", gpsMap.size() );
+		jsobject.element("entitys", gpsMap );
+		strResult = jsobject.toString();
+		return strResult;
+	}*/
+}

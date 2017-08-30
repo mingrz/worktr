@@ -1,0 +1,901 @@
+﻿.blowdownFrame{
+			background-color: #fff;
+		    position: absolute;
+		    right: 0;
+		    z-index: 20;
+		    width: 200px;
+		    border: 3px solid #084a91;
+		    overflow: hidden;
+		}
+		.Title{
+			width: 95%;
+		    height: 40px;
+		    background-color: #084a91;
+		    color: #fff;
+		    padding-left: 5%;
+		    line-height: 40px;
+		    font-size: 1em;
+		}
+		.environmentLayer_Ul_p{
+			color: #000;
+		    font-size: 13px;
+		    line-height: 26px;
+		    font-weight: 500;
+		    width: 98%;
+		    padding-left: 2%;
+		    background: #e2e2e2;
+		    background-image: url(../images/down.png);
+		    background-position: 92% 50%;
+		    background-repeat: no-repeat;
+		    background-size: 7%;
+		}
+		.environmentLayer {
+			    width: 100%;
+			    clear: both;
+			    overflow-y: scroll;
+			}
+		.environmentLayer_Ul_p span{
+			margin-left: 9px;
+		}
+		.environmentLayer_Ul,.environmentLayer_Ul_u1{
+			width: 100%;
+			float: left;
+		}
+		.environmentLayer_Ul li,.environmentLayer_Ul_u1 li{
+			width: 100%;
+			clear: both;
+		}
+		.environmentLayer_Ul li{
+			margin-bottom: 1px;
+		}
+		.environmentLayer_Ul_u1 li{
+			line-height: 22px;
+		}
+		.environmentLayer_Ul_u1 li span{
+			margin-left: 3px;
+		}
+		.environmentLayer_Ul_u1 input{
+			margin-top: -2px;
+		}
+		.environmentLayer_Ul_u1 li label{
+			color: #000;
+		    font-size: 0.75em;
+		    line-height: 20px;
+		    margin-left: 8%;
+			float: left;
+		}
+		.environmentList{
+			width: 100%;
+			clear: both;
+			overflow-y: auto;
+		}
+		.environmentList_Ul_p{
+			color: #000;
+			font-size: 13px;
+			width: 90%;
+			line-height: 22px;
+			margin: 0 auto;
+			border-bottom: 1px solid #ccc;
+			margin-bottom: 4px;
+		}
+		.leadChange{
+			width: 100%;
+			float: left;
+		}
+		.leadChange ul{
+			width: 100%;
+		}
+		.leadChange ul li{
+			width: 100%;
+		}
+		.leadChange span{
+			color: #000;
+			font-size: 0.8em;
+			line-height: 24px;
+		}
+		#leadCross_ipt1,#leadCross_ipt2,#leadRoad_ipt1,#leadArea_ipt1{
+				width: 40px !important;
+				height: 18px !important;
+				margin-bottom: 0px !important;
+				padding: 0px !important;
+				margin-left: 5px;
+		}
+		#leadRoadSelect,#moveSafeSelect,#airIceFilter,#blowoffRoadSelect,#blowoffCrossSelect{
+			width: 87px;
+		    font-size: 0.8em;
+		    padding: 0px !important;
+		    height: 20px;
+		    margin-bottom: 0px !important;
+
+		}
+		#leadRoadSelect option,#moveSafeSelect option,#airIceFilter option,#blowoffRoadSelect option,#blowoffCrossSelect option{
+			font-size: 13px;
+		}
+		#leadCrossSet,#leadRoadSet,#leadAreaSet,#blowoffRoad,#blowoffCross,#moveSafeSet,#airIceSet{
+			margin-top: 0px;
+			margin-left: 8%;
+		}
+		.setWorld{
+			margin-left: 6px;
+		}
+		.setWorld1{
+			margin-left: 18.5%;
+		}
+		.addEnvironmentStation{
+			width: 16px;
+			height: 16px;
+			float: right;
+			margin-right: 8px;
+    		margin-top: 4px;
+		}
+		.olPopup{
+			background: none;
+		}
+		.li_box,.li_words,.box_img{
+			float: left;
+		}
+		.li_box:hover,.li_words:hover{
+			cursor: pointer;
+		}
+		.li_box{
+			width: 100%;
+		}
+		.box_img{
+			margin-top: 4px;
+		}
+		.li_words{
+			margin-left: 5px;
+		}
+		.li_flag{
+			width: 16px;
+			height: 22px;
+		}
+		.environmentList_number,.cross_name{
+			font-size: 0.75em;
+			color: #000;
+			line-height: 14px;
+			width: 96px;
+		    overflow: hidden;
+		    text-overflow: ellipsis;
+		    white-space: nowrap;
+		}
+		.environmentList_Ul li{
+			width: 90%;
+			margin-left: 5%;
+    		float: left;
+			clear: both;
+			margin-bottom: 4px;
+		}
+		.environmentData{
+			width: 100%;
+			clear: both;
+			overflow-y:auto; 
+		}
+.environmentData_Ul {
+    width: 100%;
+    /*overflow-y:auto; */
+}
+	.environmentData_Ul	li {
+    width: 100%;
+    color: #4d4d4d;
+    font-size: 13px;
+    line-height: 22px;
+}
+#PM25,#PM10,#SO2,#NO2,#CO,#O3,#airTemperature,
+#relativeHumidity,#windSpeed,#windDirection,#atmosphere,#conditionScore,
+#pavementTemperature,#freezingTemperature,#coveringThickness,
+#coveringThickness,#weatherType,#precipitation{
+	margin-left: 8px;
+}
+#PM25_val,#PM10_val,#SO2_val,#NO2_val,#O3_val,#airTemperature_val,
+#relativeHumidity_val,#windSpeed_val,#windDirection_val,#atmosphere_val,#conditionScore_val,
+#pavementTemperature_val,#freezingTemperature_val,#coveringThickness_val,
+#coveringThickness_val,#weatherType_val,#precipitation_val{
+	margin-left: 5px;
+}
+.unit{
+	margin-left: 3px;
+}
+.environmentList_Ul{
+	width: 100%;
+	float: left;
+	clear: both;
+}
+.Title,.environmentList_Ul_p{
+	clear: both;
+}
+.More,.delete{
+	float: right;
+	width: 13px;
+	height: 13px;
+}
+.delete{
+	margin-right: 10px;
+}
+.More{
+	margin-right: 5px;
+}
+.btn_frame{
+	width: 100%;
+	bottom: 8px;
+	/*height: 30px;*/
+	text-align: right;
+	position: absolute;
+}
+.Chart_frame{
+	width: 800px;
+    float: left;
+}
+.btn_frame input{
+	margin-right: 20px;
+	font-size: 0.75em;
+    padding: 0px 2px;
+}
+
+.environment_Data_statistics{
+	width: 1000px;
+	height: 500px;
+	position: absolute;
+	top: -96px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	margin: auto;
+	border: 3px solid #084a91;
+	background-color: #084a91;
+	z-index: 102;
+}
+.environmentChangeUl{
+	width: 100%;
+	height: 24px;
+	font-size: 0.8em;
+}
+.environmentChangeUl li{
+	float: left;
+}
+.environmentChangeUl li span{
+	color: #fff;
+}
+#gasType{
+	width: 100px;
+    padding: 0px !important;
+    height: 20px;
+    font-size: 0.8em;
+    margin-bottom: 0px !important;
+    margin-left: 8px;
+}
+.environmentLi2{
+	margin-left: 18px;
+}
+.environment_content{
+	width: 100%;
+	height: 446px;
+}
+.environment_content .chart{
+	width: 800px;
+	height: 444px;
+	float: left;
+	background-color: #fff;
+}
+.revise_frame{
+	width: 196px;
+	height: 498px;
+	background-color: #7684A8;
+	float: right;
+	position: relative;
+}
+.node_bg{
+	background-color: #7684A8;
+}
+#node_ul input{
+	width: 112px;
+} 
+.csv_frame{
+	margin-top: 18px;
+}
+.chartTitle span{
+	margin-left: 10px;
+	font-size: 13px;
+	line-height: 30px;
+}
+.chartTitle span:hover{
+	cursor: pointer;
+}
+.chartData_show{
+	width: 800px;
+	height: 436px;
+}
+.weatherchartData_show{
+	width: 800px;
+	height: 350px;
+}
+.pm{
+	color: red;
+}
+#right_environment{
+	position: absolute;
+	z-index:99;
+	background-color: silver;
+}
+.weatherBar{
+    	width: 100%;
+    	height: 118px;
+    }
+    .weatherStatus_frame,.seeing_frame,.roadStatus_frame{
+    	width:650px;
+    	height: 20px;
+    	margin: 0 auto;
+    	margin-bottom: 8px;
+    	
+    }
+    .weatherStatus_frame{
+    	margin-top: 18px;
+    }
+    .weatherStatus_bar,.seeing_bar,.roadStatus_bar{
+		width: 500px;
+		height: 12px;
+		margin-top: 5px;
+    	margin-left: 33px;
+		background-color: green;
+		display: inline-block;
+		float: left;
+		border: 1px solid #000;
+    }
+    .span_describ{
+    	float: left;
+    	font-size: 14px;
+    	line-height: 22px;
+    }
+
+.Frame{
+   		width: 200px;
+		height:100px;
+		position: absolute;
+		z-index: 90;
+		margin-top: 90px;
+		margin-left: 350px;
+   }
+   .zhao_bg{
+		width: 100%;
+		height: 100px;
+		position: absolute;
+		z-index: 91;
+		opacity: 0.5;
+   }
+	.weather_alarm{
+		width: 100%;
+		height:100px;
+		position: absolute;
+		z-index: 92;
+	}
+	.alarm_title{
+		width: 97%;
+		line-height: 24px;
+		font-size: 13px;
+		color: #000;
+		padding-left:3%; 
+	}
+	.alarmImg_frame{
+		width: 100%;
+		height: 46px;
+		text-align: center;
+		margin-top: 5px;
+	}
+	.alarmImg_frame img{
+		width: 36px;
+		height: 36px;
+		margin-right: 13px;
+		margin-left: 13px;
+		margin-top: 4px;
+	}
+	.alarmTemperature_frame{
+		width: 100%;
+		line-height: 24px;
+		font-size: 14px;
+		color: #000;
+	}
+	.roadTemperature{
+		margin-left: 10px;
+	}
+	.airTemperature{
+			margin-left: 42px;
+	}
+	.roadTemperature_val,.airTemperature_val{
+		margin-left: 3px;
+	}
+	.red_bg{
+		background-color: red;
+	}
+	.green_bg{
+		background-color: red;
+	}
+	.yellow_bg{
+		background-color: red;
+	}
+	.alarm{
+		border: 2px solid red;
+	}
+
+/*温度表*/
+.temperature_block{
+		width: 116px;
+		height: 146px;
+		position: fixed;
+		z-index: 90;
+		bottom:36px;
+		right: 3px; 
+		background-color: #2ca762;
+	}
+	.temperature_title{
+		width: 96%;
+		padding-left: 4%;
+		line-height: 22px;
+		color: #000;
+		font-size: 13px;
+	}
+	.temperature_color,.freezing_color{
+		width: 10px;
+		height: 10px;
+		display: inline-block;
+	}
+	.freezing_color{
+		margin-left: 8px;
+	}
+	.temperature_color{
+		margin-left: 7px;
+	}
+	.temperature_bg1{
+		background-color: #915731;
+	}
+	.temperature_bg2{
+		background-color: #918b32;
+	}
+	.temperature_bg3{
+		background-color: #91a133;
+	}
+	.temperature_bg4{
+		background-color: #94ba34;
+	}
+	.temperature_bg5{
+		background-color: #91c53b;
+	}
+	.freezing_bg1{
+		background-color: #4554a4;
+	}
+	.freezing_bg2{
+		background-color: #1570a7;
+	}
+	.freezing_bg3{
+		background-color: #2490a8;
+	}
+	.freezing_bg4{
+		background-color: #1db4a8;
+	}
+	.freezing_bg5{
+		background-color: #40b897;
+	}
+	.temperature_bg6{
+		background-color: #59b63f;
+	}
+	.temperature_Ul{
+		width: 100%;
+		float: left;
+		clear: both;
+	}
+	.temperature_Ul span{
+		font-size: 13px;
+		color:#000;
+		line-height: 18px;
+		margin-left: 2px;
+	}
+	.temperature_Ul sup{
+		width: 4px;
+	    height: 4px;
+	    display: inline-block;
+	}
+	.now_color span{
+		margin-left: 2px;
+	}
+.lead_nodes{
+	width: 200px;
+    position: absolute;
+    margin: auto;
+    top: -96px;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 102;
+    background-color: #7684A8;
+    border: 3px solid #187fc4;
+}
+.environmentData_Ul	li{
+	width: 100%;
+	float: left;
+	clear: both;
+}
+.lead_title_p{
+	width: 94%;
+    padding-left: 6%;
+    margin: 0 auto;
+    font-size: 13px;
+    line-height: 22px;
+    font-weight: 600;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 2px;
+}
+
+.lead_title{
+	width: 98%;
+	padding-left: 2%;
+	line-height: 30px;
+	color: #fff;
+	font-size: 13px;
+	background-color: #187fc4;
+}
+.editContent input{
+	height: 20px;
+	padding: 0;
+	margin-bottom: 0;
+	font-size: 0.85em;
+	color: #000;
+}
+.villageText{
+	width: 99%;
+	height: 50px;
+	max-width: 200px;
+	max-height: 50px;
+}
+.editContent{
+	width: 100%;
+    float: left;
+    clear: both;
+}
+.editContent li{
+	width: 100%;
+	float: left;
+	clear: both;
+	line-height: 22px;
+}
+.editContent select{
+	width: 119px;
+	height: 20px;
+	padding:0;
+	margin-bottom: 0;
+	font-size: 0.85em;
+}
+.editContent select option{
+	font-size: 13px;
+}
+.editContent span{
+	margin-left: 12px;
+	font-size: 0.85em;
+}
+.editContent_text_ipt1{
+	margin-left: 10px;
+	width: 118px;
+}
+.editContent_text_ipt2{
+	margin-left: 2px;
+	width: 118px;
+}
+.editContent_select1{
+	margin-left: 10px;
+}
+.editContent_text_ipt3{
+	width: 96px;
+	margin-left: 10px;
+}
+.villageBtn_frame,.addPframe_btn{
+	text-align: center;
+	width: 100%;
+	line-height: 26px;
+	clear: both;
+	margin-bottom: 1px;
+}
+.villageBtn_frame input,.addPframe_btn input{
+	font-size: 0.75em;
+	color: #000;
+	padding: 0 2px;
+	margin-left: 20px;
+    margin-right: 20px;
+}
+.addPframe_btn{
+	float: left;
+	margin-top: 2px;
+}
+.arrowRight{
+            background-image: url(../images/right.png);
+        }
+.environmentData_Ul li{
+    	display: none;
+    }
+    .roadSafeFrame{
+    	display: none;
+    	position: absolute;
+    	left: 2px;
+    	bottom: 82px;
+    	z-index: 20;
+    	width: 128px;
+    	height: 112px;
+    	background-color: #0B3893;
+    }
+    .roadSafeFrame ul{
+    	float: left;
+    }
+    .roadSafeFrame ul li{
+		font-size: 0.75em;
+		color: #fff;
+		line-height: 19px;
+    }
+    .color_red{
+    	background-color: #FF0000;
+    	margin-top: 5px;
+    }
+    .color_yellow{
+    	background-color: #FFFF00;
+        margin-top: 7px;
+	}
+	.color_green{
+	    background-color: #00E400;
+	    margin-top: 10px;
+	}
+	.color_blue{
+	    background-color: blue;
+	    margin-top: 8px;
+	}
+	.color_black{
+    	background-color: black;
+    	margin-top: 9px;
+	}
+	.color_size{
+		width: 10px;
+	    height: 10px;
+	    display: block;
+	    float: left;
+	    border-radius: 2px;
+	    margin-left: 14px;
+	}
+	.wordsLeft{
+		margin-left: 6px;
+	}
+	.wordsLeft1{
+		margin-left: 18px;
+	}
+	.wordsLeft2{
+		margin-left: 22px;
+	}
+/*静态系数*/
+#roadRatioFrame{
+	overflow-y:scroll; 
+	background-color: #7684A8;
+	color: #fff;
+}
+.roadRatioP{
+	padding-left: 3.5%;
+    width: 96.5%;
+    font-size: 14px;
+    line-height: 20px;
+}
+.sTitle_1{
+	margin-left: 20px;
+    font-size: 14px;
+    line-height: 20px;
+    text-decoration: underline;
+}
+.roadNameIpt{
+	margin-bottom: 0 !important;
+    width: 84px !important;
+    height: 18px !important;
+    padding: 0 !important;
+    margin-left: 6px;
+    font-size: 0.85em;
+}
+.maybeUl1_ul1{
+	width: 89%;
+    padding-left: 11%; 
+}
+.roadIpt{
+	padding: 0 !important;
+    margin-bottom: 0 !important;
+    width: 40px;
+    height: 18px !important;
+    font-size: 0.85em !important;
+    line-height: 18px !important;
+}
+.roadSec{
+	width: 98px!important;
+    height: 22px !important;
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+    font-size: 0.8em;
+}
+.roadSec option{
+	font-size: 13px;
+}
+.sTitle_1_1{
+	font-size: 13px;
+	line-height: 20px;
+}
+.pTitle1{
+	font-size: 13px;
+    line-height: 20px;
+}
+.pbtnFrame{
+	width: 100%;
+	height: 32px;
+	text-align: center;
+}
+.pbtnFrame input{
+	padding: 0px 2px;
+    font-size: 0.8em !important;
+    color: #000;
+    margin-top: 4px;
+    margin-right: 12px;
+    margin-left: 12px;
+}
+.iceFrame {
+    width: 1100px;
+    height: 500px;
+    border-bottom: 3px solid #084a91;
+    border-left: 3px solid #084a91;
+    border-right: 3px solid #084a91;
+    background-color: #084a91;
+    position: absolute;
+    z-index: 101;
+    top: -30px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+}
+.iceFrameTitle {
+    width: 99.5%;
+    line-height: 30px;
+    font-size: 16px;
+    color: #fff;
+    padding-left: 0.5%;
+}
+.iceContent{
+	width: 100%;
+	height: 473px;
+}
+.iceLeft{
+	width: 800px;
+	height: 473px;
+	float: left;
+}
+.iceTitleUl{
+	width: 100%;
+	height: 30px;
+	background-color: #7684A8;
+}
+.iceTu{
+	width: 800px;
+	height: 312px;
+	background-color: #fff;
+}
+#iceChart1,#iceChart2,#iceChart3{
+	width: 266.5px;
+	height: 310px;
+	float: left;
+}
+.iceDateFrame{
+	width: 99.8%;
+	height:125px;
+	background-color: #fff;
+	border: 1px solid #000;
+}
+.iceDataUl1,.iceDataUl2,.iceDataUl3{
+	width: 33.3%;
+	float: left;
+}
+.iceDataUl1 li,.iceDataUl2 li,.iceDataUl3 li{
+	float: left;
+    height: 30px;
+    line-height: 30px;
+    display: inline-block;
+    color: #000;
+    font-size: 13px;
+    text-align: center;
+    border-right: 1px solid #000; 
+    border-bottom: 1px solid #000;
+}
+.iceRight{
+	width: 296px;
+	height: 470px;
+	float: right;
+	background-color: #7684A8;
+}
+#iceTime1,#iceTime2{
+	margin-bottom: 0px;
+	width: 130px;
+	height: 20px;
+	font-size: 0.8em;
+	padding: 0;
+	margin-left: 12px;
+}
+.iceTitleUl li{
+	float: left;
+}
+.iceTitleUl li span{
+	color: #fff;
+	font-size: 13px;
+	line-height: 30px;
+}
+#iceTime3{
+	padding: 0px 2px;
+	font-size: 0.8em;
+	color: #000;
+	margin-top: 4.5px;
+}
+.iceTitleUl_li2,.iceTitleUl_li3{
+	margin-left: 18px;
+}
+.iceDateTitle{
+	margin: 0 !important;
+    line-height: 30px !important;
+    text-align: center;
+}
+.icePtitle{
+	width: 99.3%;
+    line-height: 30px;
+    text-align: center;
+    border-bottom: 1px solid #000;
+    border-right: 1px solid #000;
+    border-top: 1px solid #000;
+}
+.iceDataUl1_li1,.iceDataUl1_li2,.iceDataUl1_li4,.iceDataUl1_li5{
+	width: 96px;
+}
+.iceDataUl1_li3,.iceDataUl1_li6{
+	width: 70px;
+}
+.iceDataUl2 li{
+	width: 65.2px;
+}
+.iceDataUl3 li{
+	width: 87.5px;
+}
+.iceRightUlPTitle{
+	color: #fff;
+    font-size: 14px;
+    line-height: 30px;
+    width: 99%;
+    padding-left: 1%;
+    background-color: #084a91;
+}
+.iceRightUl span{
+	font-size: 13px;
+	color: #fff;
+	line-height: 22px;
+	margin-left: 8px;
+}
+.iceRightUl input{
+	width: 216px !important;
+	height: 20px !important;
+	padding: 0 !important;
+	margin-bottom: 0px !important;
+	margin-left: 8px;
+	font-size: 0.8em;
+	margin-bottom: 8px;
+}
+.iceRightImg{
+	width: 100%;
+	height: 200px;
+}
+.iceRightImg img{
+	width: 100%;
+	height: 100%;
+}
+.iceBtn{
+	width: 100%;
+	height: 57px;
+	text-align: center;
+}
+.iceBtn input{
+	margin-left: 12px !important;
+    font-size: 0.8em;
+    margin-right: 12px;
+    margin-top: 20px;
+    padding: 0px 2px;
+}

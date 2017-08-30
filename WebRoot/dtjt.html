@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title></title>
+	<link href='css/bootstrap.min.css' rel='stylesheet' />
+    <link href='css/bootstrap-responsive.min.css' rel='stylesheet' />
+    <link href='css/mystyle.css' rel='stylesheet' />
+    <link href='css/dtjt.css' rel='stylesheet' />
+    <link href='css/controls.css' rel='stylesheet' />
+    <script src = 'libs/SuperMap.Include.js'></script>
+    <script src = 'js/jquery.js'></script>
+    <script src = 'javaScript/curve.js'></script>
+    <script type="text/javascript" src="http://maps.google.cn/maps/api/js?sensor=false&language=zh-CN"></script>
+    <script type="text/javascript">
+        var supermap,layer, markerlayer ,marker,pointVector,heatMapLayer,vector,vectorSelect,vectorRoad,PointVector,heatGridLayer,subwayLine,subwaySelect,dragFeature,lineOD,heatMapCross,animator;
+        function init(){
+            supermap = new SuperMap.Map("map", {
+                controls : [ new SuperMap.Control.Navigation(),
+                    new SuperMap.Control.MousePosition() ],
+                eventListeners:{"movestart":function(){
+		                    $(".all_tc").css("visibility","hidden");
+		                },
+		                "click":function(){
+		                    $(".all_tc").css("visibility","hidden");
+		                 }}
+            });
+
+            layer = new SuperMap.Layer.CloudLayer();
+            setMapURL(layer);
+            markerlayer = new SuperMap.Layer.Markers("markerLayer");
+			heatMapLayer =  new SuperMap.Layer.Vector("markerLayer3");//小区
+			lineOD=new SuperMap.Layer.Vector("markerLayer4");//中心点连线图层
+
+			subwayLine =  new SuperMap.Layer.Vector("markerLayer50");
+			subwaySelect = new SuperMap.Control.SelectFeature(subwayLine,{
+           		callbacks:{"rightclick":subwayRightClick}//"over":subwayAttr,"out":subwayOut,
+		    }); 
+		    supermap.addControl(subwaySelect);
+		    subwaySelect.activate();
+	     
+		            
+		             //初始化矢量动态图层
+			animator = new SuperMap.Layer.AnimatorVector("animator", {rendererType:"TadpolePoint"},{
+				//frameRate: 20,
+				speed:0.5,//设置速度为每一帧播放0.01小时的数据
+				startTime:0,//设置开始时间为0时刻
+				endTime:100//设置结束时间为1时10
+			});           
+		            
+		            
+		            
+		            
+		    heatMapCross = new SuperMap.Layer.HeatMapLayer("heatMap",//路口节点尾气
+            {
+                "radius":20,
+                "featureWeight":"value",
+                "featureRadius":"geoRadius"
+            });
+
+		    dragFeature = new SuperMap.Control.DragFeature(subwayLine);
+        	dragFeature.name="markerLayer50";
+        	dragFeature.onComplete=onDragVector;
+        	supermap.addControl(dragFeature);
+        	// dragFeature.activate();
+        	// dragFeature.deactivate();
+
+            vector = new SuperMap.Layer.Vector("markerLayer2",{renderers: ["Canvas2"]});
+            PointVector = new SuperMap.Layer.Vector("PointVector");//交通瓶颈
+            //创建热点网格图
+			heatGridLayer = new SuperMap.Layer.HeatGridLayer("heatGrid");
+            supermap.addLayers([layer,markerlayer,PointVector,heatGridLayer,subwayLine,heatMapCross,lineOD,animator,vector,heatMapLayer]);
+            setCenter();
+			vectorSelect = new SuperMap.Control.SelectFeature(heatMapLayer,{
+           		callbacks:{"click":getVillageId,"rightclick":TCR_rightClick}
+		    }); 
+		    supermap.addControl(vectorSelect);
+		    vectorSelect.activate();
+		    vectorRoad = new SuperMap.Control.SelectFeature(vector,{
+					callbacks: {}
+				});	
+			supermap.addControl(vectorRoad);
+			vectorRoad.activate();
+			queryRoadNetFeature();
+			queryVillage();
+			var divTxt=document.getElementById("DD");
+			// divTxt.innerHTML=yy+"-"+timeChange(yue)+"-"+timeChange(ri);
+			divTxt.innerHTML='2016-04-01';
+			// supermap.events.on({"click":mouseClickHandler});
+			}
+        
+        
+        // first_Show(1);
+        function xintu() {
+        	var myOptions = {
+        		zoom: 19,
+        		draggable: true,
+        		scrollwheel: true,
+        		keyboardShortcuts: true,
+        		center: new google.maps.LatLng(gmarkerLonLat.lat, gmarkerLonLat.lon), //gmarkerLonLat.lat, gmarkerLonLat.lon
+        		//center : new google.maps.LatLng(39.4778466,116.6657861),
+        		mapTypeId: google.maps.MapTypeId.HYBRID
+        	};
+        	map = new google.maps.Map(document.getElementById("dtjtGoogleMap"), myOptions);
+		}
+		</script>
+</head>
+<body onLoad = "init()">
+<div class="zhao" style="display: none;"></div>
+<div class="filter_saturation" style="display: none;"><p class="filter_words" onclick="createfilterDialog('饱和度筛选',2,1,50)">筛选</p></div>
+<div class="filter_density" style="display: none;"><p class="filter_words" onclick="createfilterDialog('密度筛选',2,1,60)">筛选</p></div>
+<div class="filter_speed" style="display: none;"><p class="filter_words" onclick="createfilterDialog('行程车速筛选',2,1,70)">筛选</p></div>
+<div class="pointOn_off1">
+	<p><input type="button" class="point_on" value="激活" onclick="dragFeature_activate()"/></p>
+	<p><input type="button" class="point_off" value="关闭" onclick="dragFeature_deactivate()" /></p>
+</div>
+<div class="describeFrame" style="display: none">
+	<ul class="describeUl">
+		<li><p class="b_green b_size"></p><span>畅通</span></li>
+		<li><p class="b_yellow b_size"></p><span>基本畅通</span></li>
+		<li><p class="b_orange b_size"></p><span>轻度拥堵</span></li>
+		<li><p class="b_red b_size"></p><span>中度拥堵</span></li>
+		<li><p class="b_purple b_size"></p><span>严重拥堵</span></li>
+	</ul>
+</div>
+<div class="describeFrame_serve" style="display: none">
+	<ul class="describeUl">
+		<li><p class="b_green b_size"></p><span>等级V</span></li>
+		<li><p class="b_yellow b_size"></p><span>等级IV</span></li>
+		<li><p class="b_orange b_size"></p><span>等级III</span></li>
+		<li><p class="b_red b_size"></p><span>等级II</span></li>
+		<li><p class="b_purple b_size"></p><span>等级I</span></li>
+	</ul>
+</div>
+<div class="describeFrame_saturation" style="display: none">
+	<ul class="describeUl">
+		<li><p class="b_size_line1 b_size_public"></p><span>小于0.25</span></li>
+		<li><p class="b_size_line2 b_size_public"></p><span>0.25-0.5</span></li>
+		<li><p class="b_size_line3 b_size_public"></p><span>0.5-0.75</span></li>
+		<li><p class="b_size_line4 b_size_public"></p><span>0.75-1</span></li>
+		<li><p class="b_size_line5 b_size_public"></p><span>大于1</span></li>
+	</ul>
+</div>
+<div class="describeFrame_density" style="display: none">
+	<ul class="describeUl">
+		<li><p class="b_size_line1 b_size_public"></p><span>小于10</span></li>
+		<li><p class="b_size_line2 b_size_public"></p><span>10-20</span></li>
+		<li><p class="b_size_line3 b_size_public"></p><span>20-30</span></li>
+		<li><p class="b_size_line4 b_size_public"></p><span>30-50</span></li>
+		<li><p class="b_size_line5 b_size_public"></p><span>大于50</span></li>
+	</ul>
+</div>
+<div class="describeFrame_speed" style="display: none">
+	<ul class="describeUl">
+		<li><p class="b_size_public b_size_line1"></p><span>小于25</span></li>
+		<li><p class="b_size_public b_size_line2"></p><span>25-50</span></li>
+		<li><p class="b_size_public b_size_line3"></p><span>50-75</span></li>
+		<li><p class="b_size_public b_size_line4"></p><span>75-100</span></li>
+		<li><p class="b_size_public b_size_line5"></p><span>大于100</span></li>
+	</ul>
+</div>
+<div class="describeFrame_flow" style="display: none">
+	<ul class="describeUl">
+		<li><p class="b_size_public b_size_line1"></p><span>小于600</span></li>
+		<li><p class="b_size_public b_size_line2"></p><span>600-1000</span></li>
+		<li><p class="b_size_public b_size_line3"></p><span>1000-1400</span></li>
+		<li><p class="b_size_public b_size_line4"></p><span>1400-1800</span></li>
+		<li><p class="b_size_public b_size_line5"></p><span>大于1800</span></li>
+	</ul>
+</div>
+<div class="describeFrame_safe" style="display: none">
+	<p class="describeFrame_safe_p">风险状况</p>
+	<ul class="describeUl_safe">
+		<li><p class="b_red b_size"></p><span>高</span></li>
+		<li><p class="b_yellow b_size"></p><span>较高</span></li>
+		<li><p class="b_green b_size"></p><span>中</span></li>
+		<li><p class="b_blue b_size"></p><span>较低</span></li>
+		<li><p class="b_black b_size"></p><span>低</span></li>
+	</ul>
+</div>
+<div class="describeFrame_gas" style="display: none">
+	<ul class="describeUl">
+		<li><p class="b_green b_size"></p><span>等级V</span></li>
+		<li><p class="b_yellow b_size"></p><span>等级IV</span></li>
+		<li><p class="b_orange b_size"></p><span>等级III</span></li>
+		<li><p class="b_red b_size"></p><span>等级II</span></li>
+		<li><p class="b_purple b_size"></p><span>等级I</span></li>
+	</ul>
+</div>
+<!-- <div id="choice_list" class="jt_node_choice all_tc"><ul><li>协调控制性能</li></ul></div>
+<div id="choice_list1" class="jt_node_choice all_tc"><ul><li onclick="singleSetAttribute()">单点控制性能</li></ul></div> -->
+<!--系统主届面-->
+<div class="wrap">
+<div class="zhao1" style="display: none;"></div>
+<div id="loading"><img src="images/loading.gif"/></div> 
+	<div id="mainbody">
+		<div id="map" roadFlag="运行状态">
+			<ul class="roadStates_ul roadUl1"><!--功能按钮1-->
+				<li class="roadStates_ul_li1 tps"><p class="roadStates_ul_p1" onclick="part1Click(1)">运行状态</p><span class="roadStates_ul_span1">路网运行状态</span></li>
+				<li class="roadStates_ul_li2 tpi"><p class="roadStates_ul_p2" onclick="part1Click(2)">效率评价</p><span class="roadStates_ul_span2">区域运行效率</span></li>
+				<li class="roadStates_ul_li6 ocs"><p class="roadStates_ul_p6 radiusState" onclick="part1Click(3)">拥堵路段</p><span class="roadStates_ul_span6">常发拥堵路段</span></li>
+				<li class="roadStates_ul_li7 od"><p class="roadStates_ul_p7 radiusState" onclick="part1Click(18)">需求分布</p><span class="roadStates_ul_span7">交通需求分布</span></li>
+			</ul>
+			<ul class="roadStates_ul roadUl2"><!--功能按钮1-->
+				<li class="roadStates_ul_li1 tsi"><p class="roadStates_ul_p1" onclick="part1Click(4)">服务水平</p><span class="roadStates_ul_span1">交通服务水平</span></li>
+				<li class="roadStates_ul_li2 vic"><p class="roadStates_ul_p2" onclick="part1Click(5)">饱和程度</p><span class="roadStates_ul_span2">交通饱和度</span></li>
+				<li class="roadStates_ul_li3 tvd"><p class="roadStates_ul_p3" onclick="part1Click(6)">车流密度</p><span class="roadStates_ul_span3">车流密度</span></li>
+				<li class="roadStates_ul_li4 tes"><p class="roadStates_ul_p4" onclick="part1Click(7)">行程车速</p><span class="roadStates_ul_span4">行程车速</span></li>
+				<li class="roadStates_ul_li5 runOff"><p class="roadStates_ul_p5 radiusState" onclick="part1Click(8)">道路流量</p><span class="roadStates_ul_span5">道路流量</span></li>
+			</ul>
+			<ul class="roadStates_ul roadUl3"><!--功能按钮1-->
+				<li class="roadStates_ul_li4 alone"><p class="roadStates_ul_p1" onclick="part1Click(9)">单点性能</p><span class="roadStates_ul_span4">单点控制性能</span></li>
+				<li class="roadStates_ul_li5  concert"><p class="roadStates_ul_p5 radiusState" onclick="part1Click(10)">协调性能</p><span class="roadStates_ul_span5">协调控制性能</span></li>
+			</ul>
+			<ul class="roadStates_ul roadUl4"><!--功能按钮1-->
+				<li class="roadStates_ul_li1 subway"><p class="roadStates_ul_p1" onclick="part1Click(11)">轨道交通</p><span class="roadStates_ul_span1">轨道交通运行</span></li>
+				<li class="roadStates_ul_li2 publicBus"><p class="roadStates_ul_p2" onclick="part1Click(12)">公共汽车</p><span class="roadStates_ul_span2">公共汽车运行</span></li>
+				<li class="roadStates_ul_li3 texi"><p class="roadStates_ul_p3 radiusState" onclick="part1Click(13)">出租汽车</p><span class="roadStates_ul_span3">出租汽车运行</span></li>
+			</ul>
+			<ul class="roadStates_ul roadUl5"><!--功能按钮1-->
+				<li class="roadStates_ul_li1 static"><p class="roadStates_ul_p1" onclick="part1Click(14)">静态安全</p><span class="roadStates_ul_span1">静态安全风险</span></li>
+				<li class="roadStates_ul_li2 dynamic"><p class="roadStates_ul_p2" onclick="part1Click(15)">动态安全</p><span class="roadStates_ul_span2">动态安全风险</span></li>
+				<li class="roadStates_ul_li3 ice"><p class="roadStates_ul_p3 radiusState" onclick="part1Click(16)">天气安全</p><span class="roadStates_ul_span3">路面结冰风险</span></li>
+			</ul>
+			<ul class="roadStates_ul roadUl6"><!--功能按钮1-->
+				<li class="roadStates_ul_li1 move"><p class="roadStates_ul_p1" onclick="part1Click(17)">道路尾气</p><span class="roadStates_ul_span1">道路尾气污染</span></li>
+				<li class="roadStates_ul_li1 cross"><p class="roadStates_ul_p2" onclick="part1Click(19)">路口尾气</p><span class="roadStates_ul_span1">道路尾气污染</span></li>
+			</ul>
+			<ul class="replace">
+				<li class="li1"><p><img src="images/logo/choiceRed/1.png" style="width: 40px;height: 40px;margin-top: 6px;" onclick="changeImg(1)"></p><span class="ss1">交通运行效率评价</span></li>
+				<li class="li2"><p><img src="images/logo/blue/2.png" onclick="changeImg(2)"></p><span class="ss2">交通服务水平评价</span></li>
+				<li class="li3"><p><img src="images/logo/blue/3.png" onclick="changeImg(3)"></p><span class="ss3">信号控制性能评价</span></li>
+				<!-- <li class="li4"><p><img src="images/logo/blue/4.png" style="width: 40px;height: 40px;margin-top: 5px" onclick="changeImg(4)"></p><span class="ss4">公共交通运行评价</span></li> -->
+			    <li class="li5"><p><img src="images/logo/blue/5.png" onclick="changeImg(5)"></p><span class="ss4">道路安全风险评价</span></li>
+			    <li class="li6"><p><img src="images/logo/blue/6.png" onclick="changeImg(6)"></p><span class="ss5">尾气排放污染评价</span></li>
+			</ul>
+		</div>
+	</div> 
+	<div style="clear: both;"></div>
+	<div id="footer">
+		<div class="f_left" id="f_l">
+			<p class="pp1"><span id="DD" data="">2016-04-01</span></p>
+			<p class="pp2 reduce">
+				<input type="button" name="more1" title="日期选择"  class="more1 choice_time" id="list_time" value="..." onClick="jeDate({dateCell:'#DD',isTime:true,format:'YYYY-MM-DD'})"/>
+				<input type="button" name="ls_qd"  id="ls_enter" title="实时" />
+				<input type="button" name="reduce" value="－" id="reduce_btn"/>
+			</p>
+		</div>
+		<div class="f_mid" >
+			<div id="myTimeline">
+				<ul class="timeline">  
+			      <li>  
+			      	  <span class="start_time">00</span>
+			       	  <span class="kd"></span>
+			      </li>  
+			      <li>  
+			          <span class="kd"></span>
+			      </li>  
+			      <li>  
+			        <span class="kd"></span>  
+			      </li>  
+			      <li>  
+			        <span class="kd"></span> 
+			      </li>  
+			      <li>  
+			        <span class="kd"></span>  
+			      </li>  
+			      <li>  
+			        <span class="kd"></span>  
+			      </li>  
+			      <li>  
+			        <span class="kd"></span> 
+			      </li>  
+			      <li>  
+			        <span class="kd"></span> 
+			      </li>  
+			      <li>  
+			        <span class="kd"></span>  
+			      </li>  
+			      <li>  
+			        <span class="kd"></span>  
+			      </li>  
+			      <li>  
+			        <span class="kd"></span>  
+			      </li>  
+			      <li>  
+			        <span class="kd"></span>  
+			      </li>  
+			      <li>  
+			        <span class="kd"></span>  
+			      </li>  
+			      <li>  
+			        <span class="kd"></span>  
+			      </li>  
+			      <li>  
+			       	<span class="kd"></span> 
+			      </li>  
+			      <li>  
+			        <span class="kd"></span>
+			      </li>  
+			      <li>  
+			        <span class="kd"></span>  
+			      </li>  
+			      <li>  
+			        <span class="kd"></span>  
+			      </li>  
+			      <li>  
+			        <span class="kd"></span> 
+			      </li>  
+			      <li>  
+			        <span class="kd"></span>  
+			      </li>  
+			      <li>  
+			        <span class="kd"></span>
+			      </li>  
+			      <li>  
+			        <span class="kd"></span> 
+			      </li>  
+			      <li>  
+			        <span class="kd"></span>  
+			      </li>  
+			      <li>  
+			      	<span class="end_time">24</span>
+			        <span class="kd"></span> 
+			      </li>  
+			    </ul> 
+			    <div class="vernier" id="yb">
+			    	<time id="vernier_time" >12:30</time>
+			    </div> 
+			</div>
+			<div class="rd">
+				<span class="s1"></span>
+				<span class="s2"></span>
+				<span class="s3"></span>
+				<span class="s2"></span>
+				<span class="s1"></span>
+				<span class="s1"></span>
+				<span class="s3"></span>
+				<span class="s2"></span>
+				<span class="s1"></span>
+				<span class="s3"></span>
+				<span class="s1"></span>
+				<span class="s2"></span>
+				<span class="s3"></span>
+				<span class="s2"></span>
+				<span class="s1"></span>
+				<span class="s1"></span>
+				<span class="s3"></span>
+				<span class="s2"></span>
+				<span class="s2"></span>
+				<span class="s3"></span>
+				<span class="s1"></span>
+				<span class="s1"></span>
+				<span class="s2"></span>
+				<span class="s1"></span>
+			</div>
+		</div>
+		<div class="f_right">
+			<!-- <p class="pp1"><span class="spa1">小时指数:</span><span class="spa2">9</span></p> -->
+			<p class="pp2 add"><input type="button" name="add" value="+" id="yc">
+					<input type="button" name="yc_qd"  id="yc_enter" title="快放" />
+					<!--<span class="more">...</span>-->
+					<input type="button" name="more"  class="more" value="..." title="时间刻度"/>
+					<select name="rule" id="rule">
+						<option>5Min</option>
+						<option>10Min</option>
+						<option>30Min</option>
+						<option>60Min</option>
+					</select>
+			</p>
+			<div style="clear: both;"></div>
+			<!--<p class="pp3">
+				
+			</p>-->
+		</div>
+	</div>
+</div>
+<script src="js/jedate/jedate.js"></script>
+<script src="js/echarts.common.min.js"></script>
+<script src = 'javaScript/dtjt.js'></script>
+<script src = "javaScript/dtjtMap.js"></script>
+<script src = 'javaScript/height.js'></script>
+<script type="text/javascript" src='javaScript/phase.js'></script>
+</body>
+</html>

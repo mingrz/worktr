@@ -1,0 +1,180 @@
+﻿var map=null;
+var g_current_zoom = 0;
+//var its_time='150701070000'
+var its_time='0';
+
+function initui(){
+
+    initButton1();
+    initButton2();
+    initButton3();
+    initButton4();
+    initButton5();
+    initButton6();
+}
+
+function init(){
+    var myOptions = {
+        zoom : 14,
+        center : new google.maps.LatLng(28.061833, 113.008631),
+        mapTypeId : google.maps.MapTypeId.ROADMAP
+    };
+
+    g_current_zoom = myOptions.zoom;
+
+    // 地图构造
+    map = new google.maps.Map(document.getElementById("gmap"),myOptions);
+
+    // 按钮控件
+    initui();
+
+    // 路况图层
+    g_gisLayer[0]= new google.maps.ImageMapType({
+        getTileUrl: function(tile, zoom) {
+            if( map.getZoom()<g_level[0] )
+                return "";
+            else{
+                if( showArray[0] )
+                    return g_its_map_speed_url+"&z="+zoom+"&y="+tile.y +"&x=" +tile.x+"&t="+its_time;
+                else
+                    return "";
+            }
+        },
+        tileSize: new google.maps.Size(256, 256),
+        minZoom:13,
+        maxZoom:15,
+        opacity:0.5,
+        isPng:true
+    });
+
+    g_gisLayer[1]= new google.maps.ImageMapType({
+        getTileUrl: function(tile, zoom) {
+            if( map.getZoom()<g_level[1] )
+                return "";
+            else{
+                if( showArray[1] )
+                    return g_its_map_density_url+"&z="+zoom+"&y="+tile.y +"&x=" +tile.x+"&t="+its_time;
+                else
+                    return "";
+            }
+        },
+        tileSize: new google.maps.Size(256, 256),
+        minZoom:13,
+        maxZoom:15,
+        opacity:0.5,
+        isPng:true
+    });
+
+    g_gisLayer[2]= new google.maps.ImageMapType({
+        getTileUrl: function(tile, zoom) {
+            if( map.getZoom()<g_level[2] )
+                return "";
+            else{
+                if( showArray[2] )
+                    return g_its_map_queue_url+"&z="+zoom+"&y="+tile.y +"&x=" +tile.x+"&t="+its_time;
+                else
+                    return "";
+            }
+        },
+        tileSize: new google.maps.Size(256, 256),
+        minZoom:13,
+        maxZoom:15,
+        opacity:0.5,
+        isPng:true
+    });
+
+    g_gisLayer[3]= new google.maps.ImageMapType({
+        getTileUrl: function(tile, zoom) {
+            if( map.getZoom()<g_level[3] )
+                return "";
+            else{
+                if( showArray[3] )
+                    return g_its_map_volumn_url+"&z="+zoom+"&y="+tile.y +"&x=" +tile.x+"&t="+its_time;
+                else
+                    return "";
+            }
+        },
+        tileSize: new google.maps.Size(256, 256),
+        minZoom:13,
+        maxZoom:15,
+        opacity:0.5,
+        isPng:true
+    });
+
+    map.overlayMapTypes.insertAt(0, g_gisLayer[0]);
+    //map.overlayMapTypes.insertAt(1, g_gisLayer[1]);
+    //map.overlayMapTypes.insertAt(2, g_gisLayer[2]);
+    //map.overlayMapTypes.insertAt(5, g_gisLayer[3]);
+    //map.overlayMapTypes.removeAt(0);
+
+    GetCarGPSTimes();
+
+    google.maps.event.addListener(map,'zoom_changed',zoomChanged);
+    google.maps.event.addListener(map,'click',leftClick);
+  };
+
+function zoomChanged(){
+    g_current_zoom = map.getZoom();
+
+    if( map.getZoom()<g_level[0]-1 )
+        map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+    else
+        map.setMapTypeId(google.maps.MapTypeId.HYBRID);
+};
+
+var infowindow=null;
+function moveTo( y,x ){
+	if( infowindow != null )
+		infowindow.close();
+	
+    //map.setCenter(new google.maps.LatLng(y,x));
+
+    // 标注
+    /*userMarker = new google.maps.Marker( {
+              position : new google.maps.LatLng(y, x),
+              map : map,
+              draggable: true,
+              title : "mouse infomation",
+              icon : "./image/point.png" //自定义图片
+    });*/
+	
+	if( map.getZoom()>=17 && map.getZoom()<=19 ){
+		 var ptx=x.toString().substr(0,10);
+		 var pty=y.toString().substr(0,9);
+		
+		$.ajax({
+	    	url:"GetRoadCong",
+	        dataType:"json",
+	        data:{ "action":"data","ptx":ptx,"pty":pty},
+	        contentType:"contentType:application/x-www-form-urlencoded; charset=UTF-8",
+	        beforeSend:function(){  },
+	        success: function( data, textStatus, jqXHR ){
+	            doGetRoadCong( data );
+	        },
+	        error:function()
+	        {
+	
+	        }
+	    });
+	
+	    // 信息提示 
+	    var contentstring='<div>速度：35km/h<div>';
+	    var infoOptions={
+				content:contentstring,
+				position:new google.maps.LatLng(y, x),
+				pixelOffset:0
+		};
+	    
+	    infowindow=new google.maps.InfoWindow(infoOptions);
+	    infowindow.open(map,null);
+	}
+};
+
+function leftClick(MouseEvent){
+    var curLatLng=MouseEvent.latLng;
+    moveTo(curLatLng.lat(),curLatLng.lng());
+};
+
+function doGetRoadCong( data )
+{
+};

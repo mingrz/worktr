@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee   http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+ <context-param>
+  <param-name>config_xml</param-name>
+  <param-value>WEB-INF\config.xml</param-value>
+ </context-param>
+ 
+ 
+ 
+ 
+ <listener>
+  <listener-class>com.itsjn.listener.ApplicationInitializeListener</listener-class>
+ </listener>
+ <listener>
+  <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+ </listener>
+
+ <servlet>
+    <description>This is the description of my J2EE component</description>
+    <display-name>This is the display name of Device</display-name>
+    <servlet-name>GetDevice</servlet-name>
+    <servlet-class>com.itsjn.servlet.GetDevice</servlet-class>
+  </servlet>
+   <servlet>
+    <description>This is the description of my J2EE component</description>
+    <display-name>This is the display name of Device</display-name>
+    <servlet-name>GetScenario</servlet-name>
+    <servlet-class>com.itsjn.servlet.GetScenario</servlet-class>
+  </servlet>
+ <servlet>
+    <description>This is the description of my J2EE component</description>
+    <display-name>This is the display name of RoadNet</display-name>
+    <servlet-name>GetRoadNet</servlet-name>
+    <servlet-class>com.itsjn.servlet.GetRoadNet</servlet-class>
+  </servlet>
+<servlet>
+    <description>This is the description of my J2EE component</description>
+    <display-name>This is the display name of NetIndex</display-name>
+    <servlet-name>GetNetIndex</servlet-name>
+    <servlet-class>com.itsjn.servlet.GetNetIndex</servlet-class>
+  </servlet>
+  <servlet>
+    <description>This is the description of my J2EE component</description>
+    <display-name>This is the display name of NetState</display-name>
+    <servlet-name>GetNetState</servlet-name>
+    <servlet-class>com.itsjn.servlet.GetNetState</servlet-class>
+  </servlet>
+  <servlet>
+    <description>This is the description of my J2EE component</description>
+    <display-name>This is the display name of FastSim</display-name>
+    <servlet-name>GetFastSim</servlet-name>
+    <servlet-class>com.itsjn.servlet.GetFastSim</servlet-class>
+  </servlet>
+  <servlet>
+    <description>This is the description of my J2EE component</description>
+    <display-name>This is the display name of SignalData</display-name>
+    <servlet-name>GetSignalData</servlet-name>
+    <servlet-class>com.itsjn.servlet.GetSignalData</servlet-class>
+  </servlet>
+  
+  
+ 
+ <servlet-mapping>
+  <servlet-name>GetDevice</servlet-name>
+  <url-pattern>/GetDevice</url-pattern>
+ </servlet-mapping>
+  <servlet-mapping>
+  <servlet-name>GetScenario</servlet-name>
+  <url-pattern>/GetScenario</url-pattern>
+ </servlet-mapping>
+ <servlet-mapping>
+  <servlet-name>GetRoadNet</servlet-name>
+  <url-pattern>/GetRoadNet</url-pattern>
+ </servlet-mapping>
+ <servlet-mapping>
+  <servlet-name>GetNetIndex</servlet-name>
+  <url-pattern>/GetNetIndex</url-pattern>
+ </servlet-mapping>
+ <servlet-mapping>
+  <servlet-name>GetNetState</servlet-name>
+  <url-pattern>/GetNetState</url-pattern>
+ </servlet-mapping>
+  <servlet-mapping>
+  <servlet-name>GetFastSim</servlet-name>
+  <url-pattern>/GetFastSim</url-pattern>
+ </servlet-mapping>
+ <servlet-mapping>
+  <servlet-name>GetSignalData</servlet-name>
+  <url-pattern>/GetSignalData</url-pattern>
+ </servlet-mapping>
+ <welcome-file-list>
+  <welcome-file>index.html</welcome-file>
+ </welcome-file-list>
+ <login-config>
+  <auth-method>BASIC</auth-method>
+ </login-config>
+</web-app>

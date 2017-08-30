@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title></title>
+	<link href='css/bootstrap.min.css' rel='stylesheet' />
+    <link href='css/bootstrap-responsive.min.css' rel='stylesheet' />
+    <link href='css/mystyle.css' rel='stylesheet' />
+    <link href='css/controls.css' rel='stylesheet' />
+	<script src = 'libs/SuperMap.Include.js'></script>
+<script src = 'js/jquery.js'></script>
+	<script type="text/javascript" src="http://maps.google.cn/maps/api/js?sensor=false&language=zh-CN"></script>
+     <script type="text/javascript">
+     var supermap,layer00,supermap1,vectorHouse,markerlayer,map,LonLat,mapView,mapCur,selectFeature;
+                function init(){
+                   supermap = new SuperMap.Map("map", {
+						controls : [ new SuperMap.Control.Navigation(),
+								//new SuperMap.Control.Zoom(),
+								new SuperMap.Control.MousePosition()
+								//new SuperMap.Control.LayerSwitcher()
+								 ],
+		                eventListeners:{"movestart":function(){
+		                    $(".all_tc").css("visibility","hidden");
+		                },
+		                "click":function(){
+		                    $(".all_tc").css("visibility","hidden");
+		                 }}
+					});
+					
+					layer = new SuperMap.Layer.CloudLayer();
+					markerlayer = new SuperMap.Layer.Markers("markerLayer");
+					supermap.addLayers([layer,markerlayer]);
+					// supermap.setCenter(new SuperMap.LonLat(12992908.68611, 4798249.58516), 12);
+					// supermap.setCenter(new SuperMap.LonLat(12944665.39419, 4845167.46848), 13);
+					setCenter();
+					deng();
+					//SingnalList();单点
+					//groupControl();分组
+
+					 featuresLayer = new SuperMap.Layer.Vector();
+					var selectFeature = new SuperMap.Control.SelectFeature(featuresLayer,{
+		                    callbacks: {"rightclick":addSignal_control}
+		                });//信号控制 
+		            supermap.addControl(selectFeature);
+		            selectFeature.activate();
+                	signal_control_drawPoint();
+                }
+    </script>
+<script type="text/javascript">
+function xintu() {
+	var myOptions = {
+		zoom: 19,
+		draggable: true,
+		scrollwheel: true,
+		keyboardShortcuts: true,
+		center: new google.maps.LatLng(gmarkerLonLat.lat, gmarkerLonLat.lon),//gmarkerLonLat.lat, gmarkerLonLat.lon
+		//center : new google.maps.LatLng(39.4778466,116.6657861),
+		mapTypeId: google.maps.MapTypeId.HYBRID
+	};
+	map = new google.maps.Map(document.getElementById("map1"), myOptions);
+	
+}
+
+
+function mapVideo(){
+    var myOptions = {
+        zoom : 19,
+        draggable:true,
+        scrollwheel:true,
+        center : new google.maps.LatLng( gmarkerLonLat.lat,gmarkerLonLat.lon),
+        //center : new google.maps.LatLng(39.4778466,116.6657861),
+        mapTypeId : google.maps.MapTypeId.HYBRID
+        
+    };
+	mapView = new google.maps.Map(document.getElementById("mapView"),myOptions);
+	// console.log(map.setOptions({draggable:false,scrollwheel:false}));
+}
+</script>
+</head>
+<body onLoad = "init()">
+<div class="zhao" style="display: none;"></div>
+
+<!--系统主届面-->
+<div class="container-fluid">
+	<div id="mainbody">
+		<div class="control_choice" id="list_left1">
+			<p class="list_title">信号控制管理</p>
+            <div class="list_control" id="list_control">
+                <ul class="area_all" id="area_all">
+                	<li class="establishArea"><span class="areaSp1">创建新控制区域</span></li>
+                </ul>
+            </div>
+            <p class="list_title">对象参数</p>
+            <div class="list3" id="list3">
+                <ul class="u3" id="uu3">
+                    <li><span id="rNumber"></span><span id="iNumber"></span></li>
+                    <li><span id="rName"></span><span id="iName"></span></li>
+                     <li><span id="r3"></span><span id="iAbility"></span></li>
+                    <li><span id="r4"></span><span id="iSpeed"></span></li>
+                    <li><span id="r5"></span><span id="iDescribe"></span></li> 
+                </ul>
+            </div>
+            <div id="js-widthAuto"></div>
+        </div>
+		<!--主体中的地图区域-->
+		<div id="map"></div>
+		<!--信号控制-->
+		<div id="choice_list" class="jt_node_choice all_tc">
+            <ul><li onclick="RealTimeVideoAttribute()">查看实时控制图</li>
+            	<!-- <li onclick="reviseAlert()">查看实时控制图</li> -->
+                <li onclick="setConcert()">信号控制性能图</li>
+                <li onclick="editorMapAttribute()">设置信号机参数</li>
+                <!-- <li onclick="setsingleControl()">查看信号机参数</li> -->
+                <li onclick="setSingleSet()">编辑信号机属性</li>
+                <li onclick="markerRightAttribute()">添加到协调控制</li>
+                <li onclick="markerRightRemove()">解除其协调控制</li>
+            </ul>
+        </div>
+        <div id="editControl" class="jt_node_choice all_tc" >
+            <ul><li onclick="empty_singleSet()" class="addlook">添加所选信号机属性</li><li onclick="unFeatureSelect()">删除所要添加信号机</li></ul>
+        </div>
+        
+		<footer></footer>
+	</div>
+</div>
+</body>
+<script src = 'javaScript/curve.js'></script>
+<script src = 'javaScript/control.js'></script>
+<script src = 'javaScript/height.js'></script>
+<script type="text/javascript" src='javaScript/phase.js'></script>
+<script src = 'js/echarts.common.min.js'></script>
+<script src="js/jedate/jedate.js"></script>
+<script type="text/javascript">
+    $(".empty").click(function(){
+        $(".zhao").css("display","none");
+        $(".mapControl").css("display","none");
+        $("#map1").remove();
+    });	
+    $(".areaSp1").click(function(){
+        addAreaName();
+    });	
+$(document).ready(function() { 
+	ratioHeight('list_left1','area_all',3,2);
+	ratioHeight('list_left1','uu3',3,1);
+	ratioHeight('js-widthAuto','uu3',1,1);
+});
+$(window).resize(function(){
+	ratioHeight('list_left1','area_all',3,2);
+	ratioHeight('list_left1','uu3',3,1);
+	ratioHeight('js-widthAuto','uu3',1,1);
+});
+
+</script>
+</html>

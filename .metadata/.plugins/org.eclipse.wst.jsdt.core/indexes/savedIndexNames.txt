@@ -1,0 +1,1 @@
+INDEX VERSION 1.121+E:\aozer-svn\cslg-ver1.0\code\project\web\ITSJN\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes

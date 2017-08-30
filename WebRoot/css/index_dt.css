@@ -1,0 +1,359 @@
+.container-fluid{padding: 0;}
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: "微软雅黑";
+    height: 100%;
+    overflow: hidden;
+}
+*{margin:0;padding: 0;}
+div,p,li,ul{margin:0;padding: 0;}
+a{text-decoration: none;}
+option{font-size: 13px;}
+li{list-style: none;}
+#mainbody{
+	width:100%;
+	float: left;
+	background-color:#fff;
+	position: relative; 
+}
+#map{
+	z-index: 1;
+	width:99.8%;
+	float: left;
+	border:1px solid #6c90c8;
+	position: relative;
+}
+header{
+	width:100%;
+	height:80px;
+	margin:0 auto;
+	position: absolute;
+    z-index: 10010;
+    top: 0px;
+}
+.nexta{
+	width: 260px;
+    height: 40px;
+    position: absolute;
+    top: 4px;
+    left: 28px;
+}
+.head{
+	width: 100%;
+    height: 30px;
+    background: #000;
+    opacity: .9;
+	/*background:url(../images/header_1.png) no-repeat;
+	background-size: 100% 100%;*/
+}
+.head span,.head a,.head input{float: right;}
+.head span{
+	color:#fff; 
+	font-size: 14px;
+	/*line-height: 26px;*/
+	margin-top: 6px;
+}
+.head a{
+	width: 20px;
+    height: 20px;
+    display: inline-block;
+    margin-top: 7px;
+    margin-right: 14px;
+}
+.head input{
+	width:18px;
+	height: 18px;
+	display: inline-block;
+	margin-top: 4px;
+	margin-right: 10px;
+	border: none;
+	background-color: #084a91;
+}
+.head a img{max-width: 100%}
+.home{
+	background: url(../images/home.png) no-repeat 50% 50%;
+	background-size:100% 80%;
+}
+.person{
+	background: url(../images/person.png) no-repeat 50% 50%;
+	background-size:100% 80%;
+}
+.close1{
+	background: url(../images/close.png) no-repeat 50% 50%;
+	background-size:100% 80%;
+}
+#div1{
+	margin-right: 2.54%;
+    margin-left: 2.54%;
+    margin-top: 6px;
+}
+.daytime{margin-right: 1.6949%;margin-top: 12px;}
+.times{margin-right: 1.18%;margin-top: 12px;}
+.logo{width:100%;height:50px;float: left;margin-top: -1px;}
+.logo_title{
+	float: left;
+    width: 100%;
+    height: 53px;
+    /*text-align: center;*/
+    background: url(../images/header_3.png) no-repeat;
+    background-size: 100% 100%;
+}
+.title{
+	color: #fff;
+    font-size: 24px;
+    line-height: 30px;
+    margin: 0;
+    margin-top: 11px;
+    padding-left: 30px;
+}
+.title_size{
+	color:red;
+	/*font-size: 1.25em;*/
+	line-height: 30px;
+	margin:0;
+}
+.footer{
+	width: 100%;
+	height: 30px;
+	position: absolute;
+	z-index: 9999;
+	bottom: 0;
+}
+.empty_btn{
+		width:20px;
+		height:20px;
+		float:right;
+		margin-top:5px;
+	}
+.f_zhao{
+	width: 100%;
+	height: 30px;
+	background-color: #000;
+	opacity: 0.9;
+	position: absolute;
+}
+.f_world{
+	width: 100%;
+	line-height: 30px;
+	color: #fff;
+	font-size: 0.85em;
+	text-align: center;
+	position: absolute;
+}
+.f_world span{
+	width: 66px;
+    line-height: 30px;
+    display: inline-block;
+    margin-left: 1.7%;
+    margin-right: 1.5%;
+    font-size: 14px;
+}
+.topWords{
+	display: none;
+	font-size: 13px;
+    line-height: 16px;
+    width: 53px;
+    position: absolute;
+    top: 35px;
+    left: -8px;
+    color: #08c;
+}
+.replace{position: fixed;z-index: 10010;bottom:30px;width: 100%;text-align: center;}
+.replace li{
+	width:50px;
+	height:50px;
+	display:inline-block;
+	margin-left: 2%;
+	margin-right: 2%;
+	position:relative;
+	border-radius: 6px;
+}
+.replace .pZhao{
+	width:50px;
+	height:50px;
+	position:absolute;
+	background-color: #000;
+	opacity: 0.75;
+	border-radius: 6px;
+	left: 0px;
+    border: 2px solid #08c;
+}
+.replace li img{
+	width: 36px;
+    height: 40px;
+    /* position: absolute; */
+    margin-left: 3px;
+    margin-top: 5px;
+}
+#replaceIpt1,#replaceIpt2,#replaceIpt3,#replaceIpt4{
+	display: none;
+}
+.replace li label{
+	width: 50px;
+    display: block;
+    position: absolute;
+}
+
+.replaceTop{position: absolute;z-index: 10010;top:33px;width: 20%;right: 0px;}
+.replaceTop li{
+	width: 36px;
+    height: 36px;
+    display: inline-block;
+    margin-left: 5%;
+    margin-right: 5%;
+    position: relative;
+    border-radius: 6px;
+}
+.replaceTop .pZhao{
+	width:30px;
+	height:30px;
+	position:absolute;
+	background-color: #000;
+	opacity: 0.75;
+	border-radius: 6px;
+	left: 0px;
+    border: 2px solid #08c;
+}
+.replaceTop li img{
+	width: 22px;
+    height: 26px;
+    margin-left: 6px;
+    margin-top: 4px;
+}
+.replaceTop li label{
+	width: 36px;
+    display: block;
+    position: absolute;
+}
+.replaceTop .li1:hover .topWords,.replaceTop .li2:hover .topWords2,.replaceTop .li3:hover .topWords3,.replaceTop .li4:hover .topWords4{
+	display: block;
+}
+/*页面按钮*/
+/*.roadStates_ul{
+    position: absolute;
+    top:150px;
+    left: 15px;
+    width: 32px;
+    text-align: center;
+    z-index: 10000;
+}
+.roadStates_ul li{
+    width: 100%;
+    line-height: 14px;
+    position: relative;
+    margin-bottom: 10px;
+}
+.partZhao{
+	position: absolute;
+	background-color: #000;
+	opacity: 0.75;
+	height: 100%;
+	width: 100%;
+	border-radius:5px;
+}
+.roadStates_ul p{
+    width: 100%;
+    line-height: 14px;
+    font-size: 0.8em;
+    font-weight: 500;
+    /*background-color: #0B3893;*/
+    border: 1px  solid #ccc;
+    box-shadow: 1px 1px #ccc;
+    color: #fff;
+    padding-top:3px;
+    padding-bottom: 3px;
+    border-radius: 5px 5px 5px 5px;
+    position: relative;
+}
+.roadStates_ul p:hover{
+    cursor:pointer;
+}
+.roadStates_ul_p1{
+    border-radius: 5px 5px 5px 5px;
+}
+.roadStates_ul_p{
+    border-radius: 5px 5px 5px 5px;
+}
+.roadStates_ul_p7{
+    border-radius:0px 0px 5px 5px ;
+}
+.roadStates_ul span{
+    display: none;
+    position: absolute;
+    width: 100px;
+    line-height: 20px;
+    color: #fff;
+    background-color: #000;
+    opacity: 0.8;
+    text-align: center;
+    font-size: 0.85em;
+    left: 14px;
+    top: 8px;
+}
+.roadStates_ul_li1:hover .roadStates_ul_span1,
+.roadStates_ul_li2:hover .roadStates_ul_span2,.roadStates_ul_li3:hover .roadStates_ul_span3,
+.roadStates_ul_li4:hover .roadStates_ul_span4,.roadStates_ul_li5:hover .roadStates_ul_span5,
+.roadStates_ul_li6:hover .roadStates_ul_span6,.roadStates_ul_li7:hover .roadStates_ul_span7{
+    display: block;
+}
+.roadStates_ul_li1:hover .roadStates_ul_p1,.roadStates_ul_li2:hover .roadStates_ul_p2,
+.roadStates_ul_li3:hover .roadStates_ul_p3,.roadStates_ul_li4:hover .roadStates_ul_p4,
+.roadStates_ul_li5:hover .roadStates_ul_p5,.roadStates_ul_li6:hover .roadStates_ul_p6,
+.roadStates_ul_li7:hover .roadStates_ul_p7{
+    background-color: red !important;
+}*/
+.splitScreenFrame{
+	position: absolute;z-index: 9999;width: 100%;height: 100%;
+}
+.ScreenZhao{
+	position: absolute;z-index: 9999;width: 100%;height: 100%;background-color: #000;opacity: 0.4;
+}
+.ScreenZhao1{
+	position: absolute;z-index: 10010;width: 100%;height: 100%;background-color: #fff;opacity: 0;
+}
+.littleMapHeader{
+	width: 100%;
+	height: 40px;
+	position: absolute;
+	z-index: 10000;
+}
+.littleMapHeader1{
+	width: 100%;
+	height: 15px;
+	background:url(../images/header_1.png) no-repeat;
+	background-size: 100% 100%;
+}
+.littleMapHeader2{
+	width: 50%;
+    height: 25px;
+    background: url(../images/header_2.png) no-repeat;
+    background-size: 100% 100%;
+}
+.littleMapHeader_words{
+	color: #fff;
+    padding-left: 10%;
+    margin-top: -5px;
+    width: 90%;
+    float: left;
+}
+.screenMapAll{
+	width: 100%;
+	position: absolute;
+	z-index: 10030 !important;
+	top:92px;
+}
+.Screen_1,.Screen_2,.Screen_3{
+	width: 33%;
+    float: left;
+    position: relative;
+}
+.Screen_1{
+	left: 0;
+}
+.Screen_2{
+	left: 0.4%;
+}
+.Screen_3{
+	left: 0.7%;
+}

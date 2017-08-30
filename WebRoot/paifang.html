@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title></title>
+	<link href='css/bootstrap.min.css' rel='stylesheet' />
+    <link href='css/bootstrap-responsive.min.css' rel='stylesheet' />
+    <link href='css/dtjt.css' rel='stylesheet' />
+    <link href='css/mystyle.css' rel='stylesheet' />
+    <link href='css/blowdown.css' rel='stylesheet' />
+	<script src = 'libs/SuperMap.Include.js'></script>
+     <script type="text/javascript">
+     			var supermap,layer, heatGridLayer,vector,selectFeature_Station,polygonVector,featuresLayer,heatMapCross,markerlayer,markerlayer1,selectFeature_road;
+                function init(){
+                	
+                   supermap = new SuperMap.Map("map", {
+						controls : [ new SuperMap.Control.Navigation(),
+								new SuperMap.Control.Zoom(),
+								new SuperMap.Control.MousePosition() ]
+					});
+					
+					layer = new SuperMap.Layer.CloudLayer();
+					vector = new SuperMap.Layer.Vector("vector");//
+					//创建热点网格图
+					heatGridLayer = new SuperMap.Layer.HeatGridLayer("heatGrid");
+					featuresLayer = new SuperMap.Layer.Vector();//创建观测站点
+					heatMapCross = new SuperMap.Layer.HeatMapLayer("heatMap",//路口排放
+                    {
+                        "radius":20,
+                        "featureWeight":"value",
+                        "featureRadius":"geoRadius"
+                    });
+                    markerlayer = new SuperMap.Layer.Markers("markerLayer");//气象站点
+					markerlayer1 = new SuperMap.Layer.Markers("markerLayer1");//视频监控点
+					supermap.addLayers([layer, heatGridLayer,heatMapCross,markerlayer,markerlayer1,vector]);
+					setCenter();
+					var selectFeature_Station = new SuperMap.Control.SelectFeature(featuresLayer,{//站点
+		                    callbacks: {"rightclick":add_Station}
+		                });    
+		            supermap.addControl(selectFeature_Station);
+		            selectFeature_Station.activate();
+
+		            selectFeature_road = new SuperMap.Control.SelectFeature(vector,{//路网
+		                callbacks: {"click":getlinkId,"over":describeValOver,"out":describeValOut}
+		            });    
+		            supermap.addControl(selectFeature_road);
+		            selectFeature_road.activate();
+		            var divTxt=document.getElementById("DD");
+            		divTxt.innerHTML='2016-04-01';
+		            queryRoadNetFeature();
+                }
+    </script>
+    <style type="text/css">
+		.environmentData_Ul li{
+    	display: none;
+    }
+    </style>
+</head>
+<body onLoad = "init()">
+<div class="zhao1" style="display: none;"></div>
+<div class="zhao" style="display: none;"></div>
+<div class="zhao_left" style="display: none;"></div>
+<div id="loading"><img src="images/loading.gif"/></div> 
+<div class="describeFrame_gas" style="display: none">
+	<ul class="describeUl">
+		<li><p class="b_green b_size"></p><span>等级V</span></li>
+		<li><p class="b_yellow b_size"></p><span>等级IV</span></li>
+		<li><p class="b_orange b_size"></p><span>等级III</span></li>
+		<li><p class="b_red b_size"></p><span>等级II</span></li>
+		<li><p class="b_purple b_size"></p><span>等级I</span></li>
+	</ul>
+</div>
+<!--系统主届面-->
+<div class="container-fluid">
+	<div id="mainbody">
+		<div class="blowdownFrame" id="blowdownFrame">
+			<p class="Title">地图图层</p>
+			<div class="environmentLayer" id="environmentLayer">
+				<ul class="environmentLayer_Ul" id="environmentLayer_Ul">
+					<li>
+						<p class="environmentLayer_Ul_p"><span>地图图层</span></p>
+						<ul class="environmentLayer_Ul_u1">
+							<li><label><input type="checkbox" name="" id="roadBlowdown" /><span>路网排放</span></label></li>
+							<li><label><input type="checkbox" name="" id="CrossLayer" /><span>路口排放</span></label></li>
+						</ul>
+					</li>
+					<li>
+						<p class="environmentLayer_Ul_p"><span>设备图层</span></p>
+						<ul class="environmentLayer_Ul_u1">
+							<li><label><input type="checkbox" name="" id="environment_stations" /><span>环境站点</span></label></li>
+							<li><label><input type="checkbox" name="" id="environment_video" /><span>视频监控</span></label></li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+			<p class="Title">环境站管理</p>
+			<div class="environmentList" id="environmentList">
+				<p class="environmentList_Ul_p"><span>站点列表</span><img src="images/add1.png" class="addEnvironmentStation" onclick="drawPoints_Station(),play_up_features(featuresLayer)"></p>
+				<ul class="environmentList_Ul" >
+				</ul>
+			</div>
+			<p class="Title">环境站动态数据</p>
+			<div class="environmentData" id="environmentData">
+				<ul class="environmentData_Ul" id="environmentData_Ul">
+					<li><span id="PM25">PM2.5</span>:<span id="PM25_val">23</span><span class="unit">mg/m<sup>2</sup></span></li>
+					<li><span id="PM10">PM10</span>:<span id="PM10_val">50</span><span class="unit">mg/m<sup>2</sup></span></li>
+					<li><span id="SO2">二氧化硫</span>:<span id="SO2_val">10</span><span class="unit">ppb</span></li>
+					<li><span id="NO2">二氧化氮</span>:<span id="NO2_val">10</span><span class="unit">ppb</span></li>
+					<li><span id="CO">一氧化碳</span>:<span id="CO_val">10</span><span class="unit">ppb</span></li>
+					<li><span id="O3">臭氧</span>:<span id="O3_val">10</span><span class="unit">ppb</span></li>
+				</ul>
+			</div>
+		</div>
+		<div id="map" roadFlag="道路尾气"></div>
+		<div id="right_environment" class="jt_node_choice all_tc">
+            <ul>
+            	<li onclick="unFeatureSelect(),emptyStation_information()" class="addlook">添加环境观测站</li>
+            	<li onclick="unFeatureSelect()">删除新建环境站点</li>
+            </ul>
+        </div>
+		<div id="footer" >
+	        <div class="f_left" id="f_l">
+	            <p class="pp1"><span id="DD" data=""></span></p>
+	            <p class="pp2 reduce">
+	                <input type="button" name="more1" title="日期选择"  class="more1 choice_time" id="list_time" value="..." onClick="jeDate({dateCell:'#DD',isTime:true,format:'YYYY-MM-DD'})"/>
+	                <input type="button" name="ls_qd"  id="ls_enter" title="实时"/>
+	                <input type="button" name="reduce" value="－" id="reduce_btn"/>
+	            </p>
+	        </div>
+	        <div class="f_mid" >
+	            <div id="myTimeline">
+	                <ul class="timeline">  
+	                  <li>  
+	                      <span class="start_time">00</span>
+	                      <span class="kd"></span>
+	                  </li>  
+	                  <li>  
+	                      <span class="kd"></span>
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="end_time">24</span>
+	                    <span class="kd"></span> 
+	                  </li>  
+	                </ul> 
+	                <div class="vernier" id="yb">
+	                    <time id="vernier_time" >12:30</time>
+	                </div> 
+	            </div>
+	            <div class="rd">
+	                <span class="s1"></span>
+	                <span class="s2"></span>
+	                <span class="s3"></span>
+	                <span class="s2"></span>
+	                <span class="s1"></span>
+	                <span class="s1"></span>
+	                <span class="s3"></span>
+	                <span class="s2"></span>
+	                <span class="s1"></span>
+	                <span class="s3"></span>
+	                <span class="s1"></span>
+	                <span class="s2"></span>
+	                <span class="s3"></span>
+	                <span class="s2"></span>
+	                <span class="s1"></span>
+	                <span class="s1"></span>
+	                <span class="s3"></span>
+	                <span class="s2"></span>
+	                <span class="s2"></span>
+	                <span class="s3"></span>
+	                <span class="s1"></span>
+	                <span class="s1"></span>
+	                <span class="s2"></span>
+	                <span class="s1"></span>
+	            </div>
+	        </div>
+	        <div class="f_right">
+	            <!-- <p class="pp1"><span class="spa1">小时指数:</span><span class="spa2">9</span></p> -->
+	            <p class="pp2 add"><input type="button" name="add" value="+" id="yc">
+	                    <input type="button" name="yc_qd"  id="yc_enter" title="快放"/>
+	                    <!--<span class="more">...</span>-->
+	                    <input type="button" name="more"  class="more" value="..." title="时间刻度"/>
+	                    <select name="rule" id="rule">
+	                        <option>5Min</option>
+	                        <option>10Min</option> 
+	                        <option>30Min</option>
+	                        <option>60Min</option> 
+	                    </select>
+	            </p>
+	            <div style="clear: both;"></div>
+	        </div>
+	    </div>
+	</div>
+</div>
+</body>
+<script src = 'js/jquery.js'></script>
+<script src="js/jedate/jedate.js"></script>
+<script src = 'javaScript/height.js'></script>
+<script src="javaScript/paifang_map.js"></script>
+<script src = 'javaScript/chartsData.js'></script>
+<script type="text/javascript" src="js/echarts.common.min.js"></script>
+</html>

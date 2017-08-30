@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title></title>
+	<link href='css/bootstrap.min.css' rel='stylesheet' />
+    <link href='css/bootstrap-responsive.min.css' rel='stylesheet' />
+    <link href='css/mystyle.css' rel='stylesheet' />
+	<script src = 'libs/SuperMap.Include.js'></script>
+	<link href='css/blowdown.css' rel='stylesheet' />
+	<link href='css/dtjt.css' rel='stylesheet' />
+    <script type="text/javascript">
+     			var supermap,vector,weatherMakers,viewMarkers,featuresLayer,selectFeature_Station,selectFeature_vector1,selectFeature_vector2,markers;
+                function init(){
+                   supermap = new SuperMap.Map("map", {
+						controls : [ new SuperMap.Control.Navigation(),
+								new SuperMap.Control.Zoom(),
+								new SuperMap.Control.MousePosition() ]
+					});
+					
+					layer = new SuperMap.Layer.CloudLayer();
+					vector = new SuperMap.Layer.Vector("markerLayer2");//静态安全,动态安全,天气安全-路网图层
+					markers = new SuperMap.Layer.Markers("Markers");//标识牌
+					
+					weatherMakers = new SuperMap.Layer.Markers("weatherMakers");//气象站点
+					viewMarkers = new SuperMap.Layer.Markers("viewMarkers");//视频监控点
+					featuresLayer = new SuperMap.Layer.Vector();//创建观测站点
+					supermap.addLayers([layer,weatherMakers,viewMarkers,vector,markers]);
+					setCenter();
+					var selectFeature_Station = new SuperMap.Control.SelectFeature(featuresLayer,{//创建人员右键控件
+		                    callbacks: {"rightclick":add_Station}
+		                });    
+		            supermap.addControl(selectFeature_Station);
+		            selectFeature_Station.activate();
+		            selectFeature_vector = new SuperMap.Control.SelectFeature(vector,{//创建人员右键控件
+		                    callbacks: {}
+		                });    
+		            supermap.addControl(selectFeature_vector);
+		            selectFeature_vector.activate();
+		            queryRoadNetFeature();
+		            var divTxt=document.getElementById("DD");
+					// divTxt.innerHTML=yy+"-"+timeChange(yue)+"-"+timeChange(ri);
+					divTxt.innerHTML='2016-04-01';
+                }
+    </script>
+    
+
+</head>
+<body onLoad = "init()">
+<div class="roadSafeFrame">
+	<ul>
+		<li><span class="wordsLeft">颜色</span></li>
+		<li><p class="color_red color_size"></p></li>
+		<li><p class="color_yellow color_size"></p></li>
+		<li><p class="color_green color_size"></p></li>
+		<li><p class="color_blue color_size"></p></li>
+		<li><p class="color_black color_size"></p></li>
+	</ul>
+	<ul>
+		<li><span class="wordsLeft">风险等级</span></li>
+		<li><span class="wordsLeft1">V级</span></li>
+		<li><span class="wordsLeft1">IV级</span></li>
+		<li><span class="wordsLeft1">III级</span></li>
+		<li><span class="wordsLeft1">II级</span></li>
+		<li><span class="wordsLeft1">I级</span></li>
+	</ul>
+	<ul>
+		<li><span class="wordsLeft">风险状况</span></li>
+		<li><span class="wordsLeft2">高</span></li>
+		<li><span class="wordsLeft1">较高</span></li>
+		<li><span class="wordsLeft2">中</span></li>
+		<li><span class="wordsLeft1">较低</span></li>
+		<li><span class="wordsLeft2">低</span></li>
+	</ul>
+</div>
+<div class="zhao_left" style="display: none;"></div>
+<div class="zhao1" style="display: none;"></div>
+<div class="zhao" style="display: none;"></div>
+<div id="loading"><img src="images/loading.gif"/></div> 
+<!--系统主届面-->
+<div class="container-fluid">
+	<div class="blowdownFrame" id="thermographyFrame" style="display: none">
+			<p class="Title">地图图层</p>
+			<div class="environmentLayer" id="thermographyLayer">
+				<ul class="environmentLayer_Ul" id="thermography_Ul">
+					<li>
+						<p class="environmentLayer_Ul_p"><span>地图图层</span></p>
+						<ul class="environmentLayer_Ul_u1 checkMapUl">
+							<li><label for="thermographyMap"><input type="checkbox" name="" onclick="checkMap('#thermographyMap')" id="thermographyMap" checked="checked" /><span>热谱地图</span></label></li>
+							<li><label for="roadbed"><input type="checkbox" name="" onclick="checkMap('#roadbed')" id="roadbed" /><span>路面状况</span></label></li>
+							<li><label for="iceForecast"><input type="checkbox" name="" onclick="checkMap('#iceForecast')" id="iceForecast" /><span>冰点预测</span></label></li>
+						</ul>
+					</li>
+					<li>
+						<p class="environmentLayer_Ul_p"><span>设备图层</span></p>
+						<ul class="environmentLayer_Ul_u1">
+							<li><label for="weather_stations"><input type="checkbox" name="" id="weather_stations" /><span>气象站点</span></label></li>
+							<li>
+                                <label for="detachIce"><input type="checkbox" name="detachIce" id="detachIce" /><span>除冰系统</span></label> 
+                            </li>
+							<li><label for="weather_video"><input type="checkbox" name="" id="weather_video" /><span>视频监控</span></label></li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+			<p class="Title">气象站管理</p>
+			<div class="environmentList" id="thermographyList">
+				<p class="environmentList_Ul_p"><span>站点列表</span><img src="images/add1.png" class="addEnvironmentStation" onclick="drawPoints_Station(),play_up_features(featuresLayer)"></p>
+				<ul class="environmentList_Ul" >
+					
+				</ul>
+			</div>
+			<p class="Title">气象站站动态数据</p>
+			<div class="environmentData" id="weatherData">
+				<ul class="environmentData_Ul" id="weatherData_Ul">
+					<li><span id="airTemperature"></span>:<span id="airTemperature_val"></span><span class="unit"><sup>。</sup>C</span></li>
+					<li><span id="relativeHumidity"></span>:<span id="relativeHumidity_val"></span><span class="unit">%</span></li>
+					<li><span id="windSpeed"></span>:<span id="windSpeed_val"></span><span class="unit">m/s</span></li>
+					<li><span id="windDirection"></span>:<span id="windDirection_val"></span></li>
+					<li><span id="atmosphere"></span>:<span id="atmosphere_val"></span><span class="unit">MPa</span></li>
+					<li><span id="conditionScore"></span>:<span id="conditionScore_val"></span></li>
+					<li><span id="pavementTemperature"></span>:<span id="pavementTemperature_val"></span><span class="unit"><sup>。</sup>C</span></li>
+					<li><span id="freezingTemperature"></span>:<span id="freezingTemperature_val"></span><span class="unit"><sup>。</sup>C</span></li>
+					<li><span id="coveringThickness"></span>:<span id="coveringThickness_val"></span><span class="unit">mm</span></li>
+					<li><span id="weatherType"></span>:<span id="weatherType_val"></span></li>
+					<li><span id="precipitation"></span>:<span id="precipitation_val"></span><span class="unit">mm</span></li>
+				</ul>
+			</div>
+	</div>
+	<div class="blowdownFrame" id="roadRatioFrame">
+		<p class="roadRatioP">所选弧段编辑:</p>
+		<div class="maybeRatio" id="maybeRatioFrame">
+			<ul class="maybeUl1">
+				<li>
+					<span class="sTitle_1">道路属性:</span>
+					<ul class="maybeUl1_ul1">
+						<li>
+							<span class="sTitle_1_1">道路名称:</span><input type="text" value="" id="ratioAttr0" class="roadNameIpt"/>
+						</li>
+						<li>
+							<span class="sTitle_1_1">弧段桩号:</span><input type="text" value="" id="ratioAttr1" class="roadNameIpt"/>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<span class="sTitle_1">驶出路外风险系数:</span>
+					<ul class="maybeUl1_ul1">
+						<li><span class="sTitle_1_1">可能性:</span></li>
+						<li>
+							<p class="pTitle1">车道宽度</p>
+							<select id="ratioSelect0" class="roadSec">
+								<option>宽(>=3.25m)</option>
+								<option>适中(&gt;=2.75m~&lt;3.25m)</option>
+								<option>窄(&gt;=0m~&lt;2.75m)</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr2" class="roadIpt" />
+						</li>
+						<li>
+							<p class="pTitle1">弯道曲线半径</p>
+							<select id="ratioSelect1" class="roadSec">
+								<option>直线或大半径曲线(半径&gt;900m)</option>
+								<option>曲线半径较缓(半径&gt;500m~&lt;=900m)</option>
+								<option>小半径曲线(半径&gt;200m~&lt;=500m)</option>
+								<option>急弯(半径&gt;0m~&lt;=200m)</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr3" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">弯道安全性</p>
+							<select id="ratioSelect2" class="roadSec">
+								<option>一般</option>
+								<option>差</option>
+								<option>无</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr4" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">诱导标志标线</p>
+							<select id="ratioSelect3" class="roadSec">
+								<option>一般</option>
+								<option>差</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr5" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">路肩振动标线</p>
+							<select id="ratioSelect4" class="roadSec">
+								<option>无</option>
+								<option>有</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr6" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">路面破损状况</p>
+							<select id="ratioSelect5" class="roadSec">
+								<option>好</option>
+								<option>中</option>
+								<option>差</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr7" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">纵向坡度%:</p>
+							<select id="ratioSelect6" class="roadSec">
+								<option>[0,7.5)</option>
+								<option>[7.5,10)</option>
+								<option>&gt;10</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr8" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">路面抗滑性</p>
+							<select id="ratioSelect7" class="roadSec">
+								<option>铺装路面-好</option>
+								<option>铺装路面-中</option>
+								<option>铺装路面-差</option>
+								<option>非铺装路面-好</option>
+								<option>非铺装路面-差</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr9" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">照明条件</p>
+							<select id="ratioSelect8" class="roadSec">
+								<option>有</option>
+								<option>无</option>
+								<option>无可用信息</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr10" class="roadIpt"/>
+						</li>
+						<li><span class="sTitle_1_1">严重性:</span></li>
+						<li>
+							<p class="pTitle1">路测障碍物</p>
+							<select id="ratioSelect9" class="roadSec">
+								<option>波形梁护栏</option>
+								<option>混凝土护栏</option>
+								<option>波形梁护栏-考虑骑行人因素</option>
+								<option>缆索式护栏</option>
+								<option>路测陡峭</option>
+								<option>路测挖方边坡(15度~75度)</option>
+								<option>路测挖方边坡(&gt;75度)</option>
+								<option>深边沟</option>
+								<option>填方边坡</option>
+								<option>峭壁</option>
+								<option>植被（致敬&gt;=10cm）</option>
+								<option>非解体消能立柱</option>
+								<option>非解体消能结构物或桥墩/建筑物</option>
+								<option>非解体消能结构或建筑</option>
+								<option>未处置护栏端头</option>
+								<option>大型岩石(高度&gt;=20cm)</option>
+								<option>无(或路测障碍物距路测&gt;20m)</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr11" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">与障碍物距离</p>
+							<select id="ratioSelect10" class="roadSec">
+								<option>[0,1)</option>
+								<option>[1,5)</option>
+								<option>[5,10)</option>
+								<option>&gt;=10</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr12" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">硬路肩宽度</p>
+							<select id="ratioSelect11" class="roadSec">
+								<option>&gt;=2.4</option>
+								<option>(1.0,2.4)</option>
+								<option>(0,1.0]</option>
+								<option>无</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr13" class="roadIpt"/>
+						</li>
+						<li>
+							<span class="sTitle_1_1">运行速度:</span>
+						</li>
+						<li>
+							<p class="pTitle1">平均速度km/h</p>
+							<select id="ratioSelect12" class="roadSec">
+								<option>&lt;=40</option>
+								<option>50</option>
+								<option>60</option>
+								<option>70</option>
+								<option>80</option>
+								<option>90</option>
+								<option>100</option>
+								<option>110</option>
+								<option>120</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr14" class="roadIpt"/>
+						</li>
+						<li>
+							<span class="sTitle_1_1">交通流量:</span>
+						</li>
+						<li>
+							<p class="pTitle1">每车道日交通量</p>
+							<select id="ratioSelect13" class="roadSec">
+								<option>0~2000(含)</option>
+								<option>2000~4000(含)</option>
+								<option>4000~26000(含)</option>
+								<option>6000~8000(含)</option>
+								<option>8000~10000(含)</option>
+								<option>10000~12000(含)</option>
+								<option>12000~14000(含)</option>
+								<option>14000~16000(含)</option>
+								<option>16000~18000(含)</option>
+								<option>&gt;18000</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr15" class="roadIpt"/>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<span class="sTitle_1">正面相撞风险系数(失控):</span>
+					<ul class="maybeUl1_ul1">
+						<li><span class="sTitle_1_1">可能性:</span></li>
+						<li>
+							<p class="pTitle1">是否为隧道</p>
+							<select id="ratioSelect14" class="roadSec">
+								<option>是</option>
+								<option>否</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr16" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">车道宽度</p>
+							<select id="ratioSelect15" class="roadSec">
+								<option>宽(>=3.25m)</option>
+								<option>适中(&gt;=2.75m~&lt;3.25m)</option>
+								<option>窄(&gt;=0m~&lt;2.75m)</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr17" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">弯道曲线半径</p>
+							<select id="ratioSelect16" class="roadSec">
+								<option>直线或大半径曲线(半径&gt;900m)</option>
+								<option>曲线半径较缓(半径&gt;500m~&lt;=900m)</option>
+								<option>小半径曲线(半径&gt;200m~&lt;=500m)</option>
+								<option>急弯(半径&gt;0m~&lt;=200m)</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr18" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">弯道安全性</p>
+							<select id="ratioSelect17" class="roadSec">
+								<option>一般</option>
+								<option>差</option>
+								<option>无</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr19" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">诱导标志标线</p>
+							<select id="ratioSelect18" class="roadSec">
+								<option>一般</option>
+								<option>差</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr20" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">中心振动标线</p>
+							<select id="ratioSelect19" class="roadSec">
+								<option>无</option>
+								<option>有</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr21" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">路面破损状况</p>
+							<select id="ratioSelect20" class="roadSec">
+								<option>好</option>
+								<option>中</option>
+								<option>差</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr22" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">纵向坡度</p>
+							<select id="ratioSelect21" class="roadSec">
+								<option>[0,7.5)</option>
+								<option>[7.5,10)</option>
+								<option>&gt;10</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr23" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">路面抗滑性</p>
+							<select id="ratioSelect22" class="roadSec">
+								<option>铺装路面-好</option>
+								<option>铺装路面-中</option>
+								<option>铺装路面-差</option>
+								<option>非铺装路面-好</option>
+								<option>非铺装路面-差</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr24" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">照明条件</p>
+							<select id="ratioSelect23" class="roadSec">
+								<option>有</option>
+								<option>无</option>
+								<option>无可有信息</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr25" class="roadIpt"/>
+						</li>
+						<li><span class="sTitle_1_1">严重性:</span></li>
+						<li>
+							<p class="pTitle1">中央分隔带类型</p>
+							<select id="ratioSelect24" class="roadSec">
+								<option>波形梁护栏</option>
+								<option>混凝土护栏</option>
+								<option>波形梁护栏-考虑骑行人因素</option>
+								<option>缆索式护栏</option>
+								<option>路测陡峭</option>
+								<option>路测挖方边坡(15度~75度)</option>
+								<option>路测挖方边坡(&gt;75度)</option>
+								<option>深边沟</option>
+								<option>填方边坡</option>
+								<option>峭壁</option>
+								<option>植被（致敬&gt;=10cm）</option>
+								<option>非解体消能立柱</option>
+								<option>非解体消能结构物或桥墩/建筑物</option>
+								<option>非解体消能结构或建筑</option>
+								<option>未处置护栏端头</option>
+								<option>大型岩石(高度&gt;=20cm)</option>
+								<option>无(或路测障碍物距路测&gt;20m)</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr26" class="roadIpt"/>
+						</li>
+						<li>
+							<span class="sTitle_1_1">运行速度:</span>
+						</li>
+						<li>
+							<p class="pTitle1">平均速度km/h</p>
+							<select id="ratioSelect25" class="roadSec">
+								<option>&lt;=40</option>
+								<option>50</option>
+								<option>60</option>
+								<option>70</option>
+								<option>80</option>
+								<option>90</option>
+								<option>100</option>
+								<option>110</option>
+								<option>120</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr27" class="roadIpt"/>
+						</li>
+						<li>
+							<span class="sTitle_1_1">交通流量:</span>
+						</li>
+						<li>
+							<p class="pTitle1">每车道日交通量</p>
+							<select id="ratioSelect26" class="roadSec">
+								<option>0~2000(含)</option>
+								<option>2000~4000(含)</option>
+								<option>4000~26000(含)</option>
+								<option>6000~8000(含)</option>
+								<option>8000~10000(含)</option>
+								<option>10000~12000(含)</option>
+								<option>12000~14000(含)</option>
+								<option>14000~16000(含)</option>
+								<option>16000~18000(含)</option>
+								<option>&gt;18000</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr28" class="roadIpt"/>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<span class="sTitle_1">正面相撞风险系数(超车):</span>
+					<ul class="maybeUl1_ul1">
+						<li><span class="sTitle_1_1">可能性:</span></li>
+						<li>
+							<p class="pTitle1">是否为隧道</p>
+							<select id="ratioSelect27" class="roadSec">
+								<option>是</option>
+								<option>否</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr29" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">单向车道数</p>
+							<select id="ratioSelect28" class="roadSec"> 
+								<option>1条车道</option>
+								<option>2条车道</option>
+								<option>3条车道</option>
+								<option>4条车道以上</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr30" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">纵向坡度</p>
+							<select id="ratioSelect29" class="roadSec">
+								<option>[0,7.5)</option>
+								<option>[7.5,10)</option>
+								<option>&gt;10</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr31" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">路面抗滑性</p>
+							<select id="ratioSelect30" class="roadSec">
+								<option>铺装路面-好</option>
+								<option>铺装路面-中</option>
+								<option>铺装路面-差</option>
+								<option>非铺装路面-好</option>
+								<option>非铺装路面-差</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr32" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">车型速度差</p>
+							<select id="ratioSelect31" class="roadSec">
+								<option>&lt;20km/h</option>
+								<option>&gt;=20km/h</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr33" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">照明条件</p>
+							<select id="ratioSelect32" class="roadSec">
+								<option>有</option>
+								<option>无</option>
+								<option>无可有信息</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr34" class="roadIpt"/>
+						</li>
+						<li><span class="sTitle_1_1">严重性:</span></li>
+						<li>
+							<p class="pTitle1">中央分隔带类型</p>
+							<select id="ratioSelect33" class="roadSec">
+								<option>波形梁护栏</option>
+								<option>混凝土护栏</option>
+								<option>波形梁护栏-考虑骑行人因素</option>
+								<option>缆索式护栏</option>
+								<option>路测陡峭</option>
+								<option>路测挖方边坡(15度~75度)</option>
+								<option>路测挖方边坡(&gt;75度)</option>
+								<option>深边沟</option>
+								<option>填方边坡</option>
+								<option>峭壁</option>
+								<option>植被（致敬&gt;=10cm）</option>
+								<option>非解体消能立柱</option>
+								<option>非解体消能结构物或桥墩/建筑物</option>
+								<option>非解体消能结构或建筑</option>
+								<option>未处置护栏端头</option>
+								<option>大型岩石(高度&gt;=20cm)</option>
+								<option>无(或路测障碍物距路测&gt;20m)</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr35" class="roadIpt"/>
+						</li>
+						<li>
+							<span class="sTitle_1_1">运行速度:</span>
+						</li>
+						<li>
+							<p class="pTitle1">平均速度km/h</p>
+							<select id="ratioSelect34" class="roadSec">
+								<option>&lt;=40</option>
+								<option>50</option>
+								<option>60</option>
+								<option>70</option>
+								<option>80</option>
+								<option>90</option>
+								<option>100</option>
+								<option>110</option>
+								<option>120</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr36" class="roadIpt"/>
+						</li>
+						<li>
+							<span class="sTitle_1_1">交通流量:</span>
+						</li>
+						<li>
+							<p class="pTitle1">每车道日交通量</p>
+							<select id="ratioSelect35" class="roadSec">
+								<option>0~2000(含)</option>
+								<option>2000~4000(含)</option>
+								<option>4000~26000(含)</option>
+								<option>6000~8000(含)</option>
+								<option>8000~10000(含)</option>
+								<option>10000~12000(含)</option>
+								<option>12000~14000(含)</option>
+								<option>14000~16000(含)</option>
+								<option>16000~18000(含)</option>
+								<option>&gt;18000</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr37" class="roadIpt"/>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<span class="sTitle_1">交叉口风险系数:</span>
+					<ul class="maybeUl1_ul1">
+						<li><span class="sTitle_1_1">可能性:</span></li>
+						<li>
+							<p class="pTitle1">交叉口类型</p>
+							<select id="ratioSelect36" class="roadSec">
+								<option>合流车道</option>
+								<option>环岛</option>
+								<option>设左转专用道的3之路(无信号)</option>
+								<option>无左转专用道的3之路(信号)</option>
+								<option>无左转专用道的3之路(信号)</option>
+								<option>设左转专用道的4之路(无信号)</option>
+								<option>无左转专用道的4之路(无信号)</option>
+								<option>设左转专用道的4之路(信号)</option>
+								<option>无左转专用道的4之路(信号)</option>
+								<option>无编号(非诚际主干线交叉)</option>
+								<option>无</option>
+								<option>与火车道交叉-被动(仅设标志)</option>
+								<option>与火车道交叉-主动(频闪灯/门栏)</option>
+								<option>中间带开口-非正规</option>
+								<option>中间带开口-正规</option>
+								<option>小型环岛</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr38" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">交叉口安全性</p>
+							<select id="ratioSelect37" class="roadSec">
+								<option>良好</option>
+								<option>差</option>
+								<option>无可用信息</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr39" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">纵向坡度</p>
+							<select id="ratioSelect38" class="roadSec">
+								<option>[0,7.5)</option>
+								<option>[7.5,10)</option>
+								<option>&gt;10</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr40" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">照明条件</p>
+							<select id="ratioSelect39" class="roadSec">
+								<option>有</option>
+								<option>无</option>
+								<option>无可有信息</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr41" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">路面抗滑性</p>
+							<select id="ratioSelect40" class="roadSec">
+								<option>铺装路面-好</option>
+								<option>铺装路面-中</option>
+								<option>铺装路面-差</option>
+								<option>非铺装路面-好</option>
+								<option>非铺装路面-差</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr42" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">视距</p>
+							<select id="ratioSelect41" class="roadSec">
+								<option>3m</option>
+								<option>5m</option>
+								<option>10m</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr43" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">渠化</p>
+							<select id="ratioSelect42" class="roadSec">
+								<option>有</option>
+								<option>无</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr44" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">速度管理</p>
+							<select id="ratioSelect43" class="roadSec">
+								<option>无</option>
+								<option>有</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr45" class="roadIpt"/>
+						</li>
+						<li><span class="sTitle_1_1">严重性:</span></li>
+						<li>
+							<p class="pTitle1">交叉口类型</p>
+							<select id="ratioSelect44" class="roadSec">
+								<option>合流车道</option>
+								<option>环岛</option>
+								<option>设左转专用道的3之路(无信号)</option>
+								<option>无左转专用道的3之路(信号)</option>
+								<option>无左转专用道的3之路(信号)</option>
+								<option>设左转专用道的4之路(无信号)</option>
+								<option>无左转专用道的4之路(无信号)</option>
+								<option>设左转专用道的4之路(信号)</option>
+								<option>无左转专用道的4之路(信号)</option>
+								<option>无编号(非诚际主干线交叉)</option>
+								<option>无</option>
+								<option>与火车道交叉-被动(仅设标志)</option>
+								<option>与火车道交叉-主动(频闪灯/门栏)</option>
+								<option>中间带开口-非正规</option>
+								<option>中间带开口-正规</option>
+								<option>小型环岛</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr46" class="roadIpt"/>
+						</li>
+						<li>
+							<span class="sTitle_1_1">运行速度:</span>
+						</li>
+						<li>
+							<p class="pTitle1">平均速度km/h</p>
+							<select id="ratioSelect45" class="roadSec">
+								<option>&lt;=40</option>
+								<option>50</option>
+								<option>60</option>
+								<option>70</option>
+								<option>80</option>
+								<option>90</option>
+								<option>100</option>
+								<option>110</option>
+								<option>120</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr47" class="roadIpt"/>
+						</li>
+						<li>
+							<span class="sTitle_1_1">交通流量:</span>
+						</li>
+						<li>
+							<p class="pTitle1">每车道日交通量</p>
+							<select id="ratioSelect46" class="roadSec">
+								<option>0</option>
+								<option>1(含)~100</option>
+								<option>100(含)~1000</option>
+								<option>1000(含)~5000</option>
+								<option>5000(含)~10000</option>
+								<option>10000(含)~15000</option>
+								<option>&lt;15000</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr48" class="roadIpt"/>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<span class="sTitle_1">路测接入口风险系数:</span>
+					<ul class="maybeUl1_ul1">
+						<li><span class="sTitle_1_1">可能性:</span></li>
+						<li>
+							<p class="pTitle1">路测接入口类型</p>
+							<select id="ratioSelect47" class="roadSec">
+								<option>商业区支路1+</option>
+								<option>居民区支路3+</option>
+								<option>居民区支路1或2</option>
+								<option>无</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr49" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">辅路有无</p>
+							<select id="ratioSelect48" class="roadSec">
+								<option>有</option>
+								<option>无</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr50" class="roadIpt"/>
+						</li>
+						<li>
+							<p class="pTitle1">中央分隔带类型</p>
+							<select id="ratioSelect49" class="roadSec">
+								<option>波形梁护栏</option>
+								<option>混凝土护栏</option>
+								<option>波形梁护栏-考虑骑行人因素</option>
+								<option>缆索式护栏</option>
+								<option>路测陡峭</option>
+								<option>路测挖方边坡(15度~75度)</option>
+								<option>路测挖方边坡(&gt;75度)</option>
+								<option>深边沟</option>
+								<option>填方边坡</option>
+								<option>峭壁</option>
+								<option>植被（致敬&gt;=10cm）</option>
+								<option>非解体消能立柱</option>
+								<option>非解体消能结构物或桥墩/建筑物</option>
+								<option>非解体消能结构或建筑</option>
+								<option>未处置护栏端头</option>
+								<option>大型岩石(高度&gt;=20cm)</option>
+								<option>无(或路测障碍物距路测&gt;20m)</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr51" class="roadIpt"/>
+						</li>
+						<li><span class="sTitle_1_1">严重性:</span></li>
+						<li>
+							<p class="pTitle1">路测接入口数量</p>
+							<select id="ratioSelect50" class="roadSec">
+								<option>商业区支路1+</option>
+								<option>居民区支路3+</option>
+								<option>居民区支路1或2</option>
+								<option>无</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr52" class="roadIpt"/>
+						</li>
+						<li>
+							<span class="sTitle_1_1">运行速度:</span>
+						</li>
+						<li>
+							<p class="pTitle1">平均速度km/h</p>
+							<select id="ratioSelect51" class="roadSec">
+								<option>&lt;=40</option>
+								<option>50</option>
+								<option>60</option>
+								<option>70</option>
+								<option>80</option>
+								<option>90</option>
+								<option>100</option>
+								<option>110</option>
+								<option>120</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr53" class="roadIpt"/>
+						</li>
+						<li>
+							<span class="sTitle_1_1">交通流量:</span>
+						</li>
+						<li>
+							<p class="pTitle1">每车道日交通量</p>
+							<select id="ratioSelect52" class="roadSec">
+								<option>0~2000(含)</option>
+								<option>2000~4000(含)</option>
+								<option>4000~26000(含)</option>
+								<option>6000~8000(含)</option>
+								<option>8000~10000(含)</option>
+								<option>10000~12000(含)</option>
+								<option>12000~14000(含)</option>
+								<option>14000~16000(含)</option>
+								<option>16000~18000(含)</option>
+								<option>&gt;18000</option>
+							</select>
+							<input type="text" placeholder="系数" id="ratioAttr54" class="roadIpt"/>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<p class="pbtnFrame">
+			<input type="button" value="确定" /><input type="button" value="取消" />
+		</p>
+	</div>
+	<div id="mainbody">
+		<div id="map" roadFlag="静态安全">
+			<ul class="replace">
+				<li class="li1"><p><img src="images/logo/safeRed/1.png" style="margin-top: 6px;width: 40px;height: 40px" onclick="roadChangeImg(1)"></p><span class="ss1">静态安全管理</span></li>
+				<li class="li2"><p><img src="images/logo/safeBlue/2.png" style="margin-top: 6px;width: 40px;height: 40px" onclick="roadChangeImg(2)"></p><span class="ss2">动态安全管理</span></li>
+				<li class="li3"><p><img src="images/logo/safeBlue/3.png" style="margin-top: 6px;width: 40px;height: 40px" onclick="roadChangeImg(3)"></p><span class="ss3">天气安全管理</span></li>
+			</ul>
+		</div>
+		<div id="right_environment" class="jt_node_choice all_tc">
+            <ul>
+            	<li onclick="unFeatureSelect(),emptyStation_information()" class="addlook">添加气象观测站</li>
+            	<li onclick="unFeatureSelect()">删除新建气象站点</li>
+            </ul>
+        </div>
+        <div id="footer" >
+	        <div class="f_left" id="f_l">
+	            <p class="pp1"><span id="DD" data=""></span></p>
+	            <p class="pp2 reduce">
+	                <input type="button" name="more1" title="日期选择"  class="more1 choice_time" id="list_time" value="..." onClick="jeDate({dateCell:'#DD',isTime:true,format:'YYYY-MM-DD'})"/>
+	                <input type="button" name="ls_qd"  id="ls_enter" title="实时"/>
+	                <input type="button" name="reduce" value="－" id="reduce_btn"/>
+	            </p>
+	        </div>
+	        <div class="f_mid" >
+	            <div id="myTimeline">
+	                <ul class="timeline">  
+	                  <li>  
+	                      <span class="start_time">00</span>
+	                      <span class="kd"></span>
+	                  </li>  
+	                  <li>  
+	                      <span class="kd"></span>
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span> 
+	                  </li>  
+	                  <li>  
+	                    <span class="kd"></span>  
+	                  </li>  
+	                  <li>  
+	                    <span class="end_time">24</span>
+	                    <span class="kd"></span> 
+	                  </li>  
+	                </ul> 
+	                <div class="vernier" id="yb">
+	                    <time id="vernier_time" >12:30</time>
+	                </div> 
+	            </div>
+	            <div class="rd">
+	                <span class="s1"></span>
+	                <span class="s2"></span>
+	                <span class="s3"></span>
+	                <span class="s2"></span>
+	                <span class="s1"></span>
+	                <span class="s1"></span>
+	                <span class="s3"></span>
+	                <span class="s2"></span>
+	                <span class="s1"></span>
+	                <span class="s3"></span>
+	                <span class="s1"></span>
+	                <span class="s2"></span>
+	                <span class="s3"></span>
+	                <span class="s2"></span>
+	                <span class="s1"></span>
+	                <span class="s1"></span>
+	                <span class="s3"></span>
+	                <span class="s2"></span>
+	                <span class="s2"></span>
+	                <span class="s3"></span>
+	                <span class="s1"></span>
+	                <span class="s1"></span>
+	                <span class="s2"></span>
+	                <span class="s1"></span>
+	            </div>
+	        </div>
+	        <div class="f_right">
+	            <!-- <p class="pp1"><span class="spa1">小时指数:</span><span class="spa2">9</span></p> -->
+	            <p class="pp2 add"><input type="button" name="add" value="+" id="yc">
+	                    <input type="button" name="yc_qd"  id="yc_enter" title="快放"/>
+	                    <!--<span class="more">...</span>-->
+	                    <input type="button" name="more"  class="more" value="..." title="时间刻度"/>
+	                    <select name="rule" id="rule">
+	                        <option>5Min</option>
+	                        <option>10Min</option> 
+	                        <option>30Min</option>
+	                        <option>60Min</option> 
+	                    </select>
+	            </p>
+	            <div style="clear: both;"></div>
+	        </div>
+	</div>
+	</div>
+</div>
+</body>
+<script src = 'js/jquery.js'></script>
+<script src = 'javaScript/height.js'></script>
+<script src = 'javaScript/roadSafe.js'></script>
+<script src = 'javaScript/chartsData.js'></script>
+<script type="text/javascript" src="js/echarts.common.min.js"></script>
+<script src="js/echarts.js"></script>
+</html>

@@ -1,0 +1,4 @@
+﻿html, body, div, ul, li, p, img, span, tr, td, h1, h2, h3, h4, h5, h6, table, a, img, dl, dd, dt, a, input, button { margin: 0; padding: 0; list-style: none; font-size: 12px; font-family: 微软雅黑; }
+button { border: none; background: none; }
+img { border: none; }
+a { text-decoration: none !important; font-family: 微软雅黑; }

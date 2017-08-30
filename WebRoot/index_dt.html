@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>北京市公共交通运行评估系统</title>
+	<link href='css/bootstrap.min.css' rel='stylesheet' />
+	<link href='css/bootstrap-responsive.min.css' rel='stylesheet' />
+	<link href='css/index_dt.css' rel='stylesheet' />
+	<script src = 'libs/SuperMap.Include.js'></script>
+    <!-- <script src = 'js/jquery.js'></script> -->
+    
+    <script type="text/javascript">
+        var supermap,supermap_1,supermap_2,supermap_3;
+        function createLittleMap(){
+        	var layer_1,layer_2,layer_3,subwayNodes_1,subwayNodes_2,subwayNodes_3,subwayLines_1,subwayLines_2,subwayLines_3,subwaySelects_1,subwaySelects_2,subwaySelects_3,animators_1,animators_2,animators_3;
+        	supermap_1 = new SuperMap.Map("dt_map1", {
+                controls : [ new SuperMap.Control.Navigation(),
+                    new SuperMap.Control.MousePosition() ]
+            });
+            supermap_2 = new SuperMap.Map("dt_map2", {
+                controls : [ new SuperMap.Control.Navigation(),
+                    new SuperMap.Control.MousePosition() ]
+            });
+            supermap_3 = new SuperMap.Map("dt_map3", {
+                controls : [ new SuperMap.Control.Navigation(),
+                    new SuperMap.Control.MousePosition() ]
+            });
+            layer_1 = new SuperMap.Layer.CloudLayer('layer_1');
+            layer_2 = new SuperMap.Layer.CloudLayer('layer_2');
+            layer_3 = new SuperMap.Layer.CloudLayer('layer_3');
+            subwayNodes_1 =  new SuperMap.Layer.Vector("markerLayer50_1");
+            subwayLines_1 =  new SuperMap.Layer.Vector("markerLayer51_1");
+            subwayNodes_2 =  new SuperMap.Layer.Vector("markerLayer50_2");
+            subwayLines_2 =  new SuperMap.Layer.Vector("markerLayer51_2");
+            subwayNodes_3 =  new SuperMap.Layer.Vector("markerLayer50_3");
+            subwayLines_3 =  new SuperMap.Layer.Vector("markerLayer51_3");
+			subwaySelects_1 = new SuperMap.Control.SelectFeature(subwayNodes_1,{
+           		callbacks:{"over":subwayAttr,"out":subwayOut,"rightclick":subwayRightClick}
+		    }); 
+		    subwaySelects_2 = new SuperMap.Control.SelectFeature(subwayNodes_2,{
+           		callbacks:{"over":subwayAttr,"out":subwayOut,"rightclick":subwayRightClick}
+		    });
+		    subwaySelects_3 = new SuperMap.Control.SelectFeature(subwayNodes_3,{
+           		callbacks:{"over":subwayAttr,"out":subwayOut,"rightclick":subwayRightClick}
+		    });  
+		    supermap_1.addControl(subwaySelects_1);
+		    supermap_2.addControl(subwaySelects_2);
+		    supermap_3.addControl(subwaySelects_3);
+		    subwaySelects_1.activate();
+		    subwaySelects_2.activate();
+		    subwaySelects_3.activate();
+		    animators_1 = new SuperMap.Layer.AnimatorVector("animator_1", {rendererType:"StretchLine"},{
+				//frameRate: 20,
+				speed:0.5,//设置速度为每一帧播放0.01小时的数据
+				startTime:0,//设置开始时间为0时刻
+				endTime:150//设置结束时间为1时10
+			}); 
+			animators_2 = new SuperMap.Layer.AnimatorVector("animator_2", {rendererType:"StretchLine"},{
+				//frameRate: 20,
+				speed:0.5,//设置速度为每一帧播放0.01小时的数据
+				startTime:0,//设置开始时间为0时刻
+				endTime:150//设置结束时间为1时10
+			}); 
+			animators_3 = new SuperMap.Layer.AnimatorVector("animator_3", {rendererType:"StretchLine"},{
+				//frameRate: 20,
+				speed:0.5,//设置速度为每一帧播放0.01小时的数据
+				startTime:0,//设置开始时间为0时刻
+				endTime:150//设置结束时间为1时10
+			}); 
+            supermap_1.addLayers([layer_1,animators_1,subwayLines_1,subwayNodes_1]);
+            supermap_1.setCenter(new SuperMap.LonLat(12957229.13494, 4853699.61315),11);
+            supermap_2.addLayers([layer_2,animators_2,subwayLines_2,subwayNodes_2]);
+            supermap_2.setCenter(new SuperMap.LonLat(12957229.13494, 4853699.61315),11);
+            supermap_3.addLayers([layer_3,animators_3,subwayLines_3,subwayNodes_3]);
+            supermap_3.setCenter(new SuperMap.LonLat(12957229.13494, 4853699.61315),11);
+            subwayPointData();
+        }
+        function init(){
+        	var layer,subwayNode,subwayLine,subwaySelect,animator;
+            supermap = new SuperMap.Map("map", {
+                controls : [ new SuperMap.Control.Navigation(),
+                    new SuperMap.Control.MousePosition() ],
+                eventListeners:{"movestart":function(){
+		                    $(".all_tc").css("visibility","hidden");
+		                },
+		                "click":function(){
+		                    $(".all_tc").css("visibility","hidden");
+		                 }}
+            });
+            layer = new SuperMap.Layer.CloudLayer();
+            setMapURL(layer);
+            subwayNode =  new SuperMap.Layer.Vector("markerLayer50");
+            subwayLine =  new SuperMap.Layer.Vector("markerLayer51");
+//          heatMapLayer =  new SuperMap.Layer.Vector("markerLayer3");//小区
+			subwaySelect = new SuperMap.Control.SelectFeature(subwayNode,{
+           		callbacks:{"over":subwayAttr,"out":subwayOut,"rightclick":subwayRightClick}//
+		    }); 
+		    supermap.addControl(subwaySelect);
+		    subwaySelect.activate();
+		    animator = new SuperMap.Layer.AnimatorVector("animator", {rendererType:"StretchLine"},{//TadpolePoint
+//				frameRate: 20,
+				speed:0.5,//设置速度为每一帧播放0.01小时的数据
+				startTime:0,//设置开始时间为0时刻
+				endTime:150//设置结束时间为1时10
+			}); 
+            supermap.addLayers([layer,animator,subwayLine,subwayNode]);
+            supermap.setCenter(new SuperMap.LonLat(12957229.13494, 4853699.61315),12);
+			showtime();
+			subwayPointData();
+			// var divTxt=document.getElementById("DD");
+			// divTxt.innerHTML='2016-04-01';
+		}
+	</script>
+</head>
+<body onLoad="init()">
+<!--外层框-->
+<div class="container-fluid">
+	<!--地图层-->
+	<div id="map" roadFlag="交通">
+		<!--页头-->
+		<header>
+			<div class="head">
+				<a href="login.html" title="关闭程序" class="close1"></a>
+				<a href="public.html" title="返回主页" class="home"></a>
+				<a href="#" title="操作管理" class="person"></a>
+				<span id="div1" onload="showtime()"></span>
+				<span class="daytime">马雪峰</span>
+				<span class="times" >欢迎您：</span>
+			</div>
+			<div class="logo">
+				<div class="logo_title">
+					<img src="images/Trafficlink.png" class="nexta">
+					<h4 class="title">公共交通运行动态决策支持系统</h4>
+				</div>
+			</div>
+		</header>
+		<!--功能选项-->
+		<ul class="replace">
+			<li class="li1"><p class="pZhao"></p><label for="replaceIpt1"><input type="checkbox" id="replaceIpt1" onclick="footerImgChange(this,1)"/><img src="images/logo/dtWhite/1.png"></label><p class="topWords topWords1">动态感知</p></li>
+			<li class="li2"><p class="pZhao"></p><label for="replaceIpt2"><input type="checkbox" id="replaceIpt2" onclick="footerImgChange(this,2)"/><img src="images/logo/dtWhite/2.png"></label><p class="topWords topWords2">预测推演</p></li>
+			<li class="li3"><p class="pZhao"></p><label for="replaceIpt3"><input type="checkbox" id="replaceIpt3"/><img src="images/logo/dtWhite/3.png"></label><p class="topWords topWords3">规律分析</p></li>
+			<li class="li4"><p class="pZhao"></p><label for="replaceIpt4"><input type="checkbox" id="replaceIpt4"/><img src="images/logo/dtWhite/4.png"></label><p class="topWords topWords4">辅助决策</p></li>
+		</ul>
+		<!--part1页脚-->
+		<div class="footer">
+			<div class="f_zhao"></div>
+			<div class="f_world">
+				<span>动&nbsp;态&nbsp;感&nbsp;知</span>
+				<span>预&nbsp;测&nbsp;推&nbsp;演</span>
+				<span>规&nbsp;律&nbsp;分&nbsp;析</span>
+				<span>辅&nbsp;助&nbsp;决&nbsp;策</span>
+			</div>
+		</div>
+	</div>
+</div>
+<script src = 'js/jquery.js'></script>
+<script src = 'javaScript/index_dt.js'></script>
+<script src = 'javaScript/height.js'></script>
+<script src = 'javaScript/sub.js'></script>
+<script src = 'javaScript/cht.js'></script>
+</body>
+</html>

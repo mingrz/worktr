@@ -1,0 +1,13 @@
+#Wed Jul 29 11:30:15 CST 2015
+tomcat6Server.ITSJN.isUptoDate=true
+tomcat6Server.ITSJN.isDeployed=true
+tomcat6Server.ITSJN.shouldOverwrite=false
+tomcat6Server.ITSJN.shouldBackup=false
+tomcat6Server.ITSJN.altContextRoot=
+tomcat6Server.ITSJN.IEARProjectName=
+tomcat6Server.ITSJN.deployIsOverProject=false
+tomcat6Server.ITSJN.deploymentPath=D\:\\tomcat\\webapps\\ITSJN
+eclipse.preferences.version=1
+tomcat6Server.ITSJN.type=WebDeployment
+tomcat6Server.ITSJN.contextRoot=/ITSJN
+tomcat6Server.ITSJN.isExploded=true

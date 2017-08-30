@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title></title>
+	<link href='css/bootstrap.min.css' rel='stylesheet' />
+    <link href='css/bootstrap-responsive.min.css' rel='stylesheet' />
+    <link href='css/mystyle.css' rel='stylesheet' />
+	<script src = 'libs/SuperMap.Include.js'></script>
+	<script src = 'js/jquery.js'></script>
+ 	<script type="text/javascript">
+ 			var supermap,vector,markerlayer,markers,layer,selectFeature_Station;
+                function init(){
+                	
+                   supermap = new SuperMap.Map("map", {
+						controls : [ new SuperMap.Control.Navigation(),
+								new SuperMap.Control.Zoom(),
+								new SuperMap.Control.MousePosition()
+								 ]
+					});
+					
+					layer = new SuperMap.Layer.CloudLayer();
+					markers = new SuperMap.Layer.Markers("Markers");//标示牌图层
+                    markerlayer = new SuperMap.Layer.Markers("markerLayer");//视频图层
+					vector = new SuperMap.Layer.Vector("vector");//小区
+					 supermap.addLayers([layer,markers,vector,markerlayer]);
+					 // supermap.setCenter(new SuperMap.LonLat(12992908.68611, 4798249.58516), 13);
+                     // supermap.setCenter(new SuperMap.LonLat(12944665.39419, 4845167.46848), 13);
+                     setCenter();
+					 //addMarker();
+					 queryRoadNetFeature();
+					 //路网左键控件
+					var selectFeature_Station = new SuperMap.Control.SelectFeature(vector,{
+		                    callbacks: {"over":overRoadIndex,"out":outRoadIndex}//"click":drawCompleted,
+		                });    
+		            supermap.addControl(selectFeature_Station);
+		            selectFeature_Station.activate();
+                }
+                  
+					
+
+    </script>
+    <style type="text/css">
+        #uu1 .arrowRight1{
+     background-image: url(images/right.png);
+}
+    </style>
+</head>
+<body onLoad = "init()">
+
+<!--系统主届面-->
+<div class="container-fluid">
+<div class="zhao1" style="display: none;"></div>
+<div class="zhao" style="display: none;"></div>
+<div id="loading"><img src="images/loading.gif"/></div>
+	<div id="mainbody">
+		<div class="list_choice" id="list_left">
+         <p class="list_title">地图图层</p>
+            <div class="list2  over_hidden" id="list1">
+                <ul class="u1" id="uu1">
+                    <li><p><span>地图图层</span></p>
+                        <ul class="u2 checkradio_ul">
+                            <li>
+                                <label for="ipt1" style="color: red"><input type="checkbox" name="check1" id="ipt1" checked="checked" />动态安全风险</label> 
+                            </li>
+                            <li>
+                                <label for="roadNodes" ><input type="checkbox" name="roadNodes" id="roadNodes" />静态安全风险</label> 
+                            </li>
+                            <li>
+                                <label for="ipt2"><input type="checkbox" name="check2" id="ipt2" />道路天气安全风险</label> 
+                            </li>
+                            
+                        </ul>
+                    </li>
+                    <li><p><span>设备图层</span></p>
+                        <ul class="u2 equipment_Ul">
+                            <li>
+                                <label for="ipt5"><input type="checkbox" name="check5" id="ipt5" />标示标牌</label> 
+                            </li>
+                            <li>
+                                <label for="ipt6"><input type="checkbox" name="check6" id="ipt6" />视频监控</label> 
+                            </li>
+                        </ul>
+                    </li>
+                  
+                </ul>
+            </div>
+                <p class="list_title">安全风险等级</p>
+            <div class="list3" id="list2">
+                <ul class="lise_ul">
+                    <li><p>黑色</p></li>
+                    <li><span class="lise_ul_li_1"></span></li>
+                    <li><span class="lise_ul_li_2"></span></li>
+                    <li><span class="lise_ul_li_3"></span></li>
+                    <li><span class="lise_ul_li_4"></span></li>
+                    <li><span class="lise_ul_li_5"></span></li>
+                    
+                </ul>
+                <ul class="lise_ul" >
+                    <li><p>风险等级</p></li>
+                    <li><p>Ⅴ级</p></li>
+                    <li><p>Ⅳ级</p></li>
+                    <li><p>Ⅲ级</p></li>
+                    <li><p>Ⅱ级</p></li>
+                    <li><p>Ⅰ级</p></li>
+                    
+                </ul>
+                <ul class="lise_ul" >
+                    <li><p>风险状况</p></li>
+                    <li><p>高</p></li>
+                    <li><p>较高</p></li>
+                    <li><p>中</p></li>
+                    <li><p>较低</p></li>
+                    <li><p>低</p></li>
+                    
+                </ul>
+            </div>
+                <p class="list_title">服务水平等级</p>
+            <div class="list3" id="list3">
+                <ul class="lise_ul">
+                    <li><p>黑色</p></li>
+                    <li><span class="lise_ul_li_1"></span></li>
+                    <li><span class="lise_ul_li_2"></span></li>
+                    <li><span class="lise_ul_li_3"></span></li>
+                    <li><span class="lise_ul_li_4"></span></li>
+                    <li><span class="lise_ul_li_5"></span></li>
+                    
+                </ul>
+                <ul class="lise_ul" >
+                    <li><p>风险等级</p></li>
+                    <li><p>Ⅴ级</p></li>
+                    <li><p>Ⅳ级</p></li>
+                    <li><p>Ⅲ级</p></li>
+                    <li><p>Ⅱ级</p></li>
+                    <li><p>Ⅰ级</p></li>
+                    
+                </ul>
+                <ul class="lise_ul" >
+                    <li><p>风险状况</p></li>
+                    <li><p>高</p></li>
+                    <li><p>较高</p></li>
+                    <li><p>中</p></li>
+                    <li><p>较低</p></li>
+                    <li><p>低</p></li>
+                    
+                </ul>
+            </div>
+        </div>
+		<div id="map" roadFlag="动态安全"></div>
+	</div>
+	<footer></footer> 
+</div>
+</body>
+
+<script src = 'javaScript/height_map.js'></script>
+<script src = 'javaScript/height.js'></script>
+<script src="javaScript/safe_map.js"></script> 
+<script type="text/javascript">
+
+</script>
+</html>

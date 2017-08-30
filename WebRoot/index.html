@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href='css/bootstrap.min.css' rel='stylesheet' />
+    <link href='css/bootstrap-responsive.min.css' rel='stylesheet' />
+    <link href='css/mystyle.css' rel='stylesheet' />
+    <link href='css/blowdown.css' rel='stylesheet' />
+    <link href='css/dtjt.css' rel='stylesheet' />
+    <script src = 'libs/SuperMap.Include.js'></script>
+    <script src = 'js/jquery.js'></script>
+    <script src = 'javaScript/public.js'></script>
+<style type="text/css">
+    .leftArrow_frame{
+        position: absolute;
+        right: -23px;
+        width: 20px;
+        height: 30px;
+    }
+    .leftArrow,.rightArrow{
+        height: 100%;
+    }
+    #list_left{
+        left:-206px;
+    }
+    #list_right{
+        right:-206px;
+    }
+    .rightArrow_frame{
+        position: absolute;
+        left: -23px;
+        width: 20px;
+        height: 30px;
+    }
+</style>
+</head> 
+<body onLoad = "init()">
+<div class="describeFrame" style="display: none"><!--Tps图例说明-->
+    <ul class="describeUl">
+        <li><p class="b_green b_size"></p><span>畅通</span></li>
+        <li><p class="b_yellow b_size"></p><span>基本畅通</span></li>
+        <li><p class="b_orange b_size"></p><span>轻度拥堵</span></li>
+        <li><p class="b_red b_size"></p><span>中度拥堵</span></li>
+        <li><p class="b_purple b_size"></p><span>严重拥堵</span></li>
+    </ul>
+</div>
+<div class="describeFrame_saturation" style="display: none"><!--Tps图例说明-->
+    <ul class="describeUl">
+        <li><p class="b_size_line1 b_size_public"></p><span>小于0.25</span></li>
+        <li><p class="b_size_line2 b_size_public"></p><span>0.25-0.5</span></li>
+        <li><p class="b_size_line3 b_size_public"></p><span>0.5-0.75</span></li>
+        <li><p class="b_size_line4 b_size_public"></p><span>0.75-1</span></li>
+        <li><p class="b_size_line5 b_size_public"></p><span>大于1</span></li>
+    </ul>
+</div>
+<div class="describeFrame_density" style="display: none"><!--Tps图例说明-->
+    <ul class="describeUl">
+        <li><p class="b_size_line1 b_size_public"></p><span>小于10</span></li>
+        <li><p class="b_size_line2 b_size_public"></p><span>10-20</span></li>
+        <li><p class="b_size_line3 b_size_public"></p><span>20-30</span></li>
+        <li><p class="b_size_line4 b_size_public"></p><span>30-50</span></li>
+        <li><p class="b_size_line5 b_size_public"></p><span>大于50</span></li>
+    </ul>
+</div>
+<div class="describeFrame_speed" style="display: none"><!--Tps图例说明-->
+    <ul class="describeUl">
+        <li><p class="b_size_public b_size_line1"></p><span>小于25</span></li>
+        <li><p class="b_size_public b_size_line2"></p><span>25-50</span></li>
+        <li><p class="b_size_public b_size_line3"></p><span>50-75</span></li>
+        <li><p class="b_size_public b_size_line4"></p><span>75-100</span></li>
+        <li><p class="b_size_public b_size_line5"></p><span>大于100</span></li>
+    </ul>
+</div>
+<div class="describeFrame_flow" style="display: none"><!--Tps图例说明-->
+    <ul class="describeUl">
+        <li><p class="b_size_public b_size_line1"></p><span>小于600</span></li>
+        <li><p class="b_size_public b_size_line2"></p><span>600-1000</span></li>
+        <li><p class="b_size_public b_size_line3"></p><span>1000-1400</span></li>
+        <li><p class="b_size_public b_size_line4"></p><span>1400-1800</span></li>
+        <li><p class="b_size_public b_size_line5"></p><span>大于1800</span></li>
+    </ul>
+</div>
+<!-- <div class="filter_saturation" style="display: none;"><p class="filter_words" onclick="createfilterDialog('饱和度筛选',2,1,50)">筛选</p></div>
+<div class="filter_density" style="display: none;"><p class="filter_words" onclick="createfilterDialog('密度筛选',2,1,60)">筛选</p></div>
+<div class="filter_speed" style="display: none;"><p class="filter_words" onclick="createfilterDialog('行程车速筛选',2,1,70)">筛选</p></div> -->
+<div class="zhao" style="display: none;"></div>
+<div class="zhao_left" style="display: none;"></div>
+<div class="zhao1" style="display: none;"></div>
+<div id="loading"><img src="images/loading.gif"/></div> 
+<!--系统主届面-->
+<div class="container-fluid">
+    <div id="mainbody">
+        <!--主体内容左侧list-->
+        <div class="list_choice" id="list_left">
+            <div class="leftArrow_frame" onclick="listShow('左')"><img src="images/index_right.png" class="leftArrow"></div>
+            <p class="list_title">图层管理</p>
+            <div class="list2  over_hidden" id="list2">
+                <ul class="u1" id="uu1">
+                    <li>
+                        <p><span>路网模型</span></p>
+                        <ul class="u2 module1"></ul>
+                    </li>
+                    <li class="setLi"><p><span>路网设备</span></p>
+                        <ul class="u2 module2"></ul>
+                    </li>
+                    <li>
+                        <p><span>动态事件</span></p>
+                        <ul class="u2 module3"></ul>
+                    </li>
+                   <li><p><span>优化措施</span></p>
+                        <ul class="u2 module4"></ul>
+                    </li>
+                    <li><p><span>决策内容</span></p>
+                        <ul class="u2 module5"></ul>
+                    </li>
+                </ul>
+            </div>
+                <p class="list_title">对象参数</p>
+            <div class="list3" id="list3">
+                <ul class="u3" id="uu3">
+                    <li><span id="pro1"></span><span id="pro2"></span></li>
+                    <li><span id="pro3"></span><span id="pro4"></span></li>
+                    <li><span id="pro5"></span><span id="pro6"></span></li>
+                    <li><span id="pro7"></span><span id="pro8"></span></li>
+                    <li><span id="pro9"></span><span id="pro10"></span></li> 
+                </ul>
+            </div>
+        </div>
+        <!--主体中的地图区域-->
+        <div id="map" roadFlag="运行状态"></div>
+        <ul class="roadStates_ul roadUl1"><!--功能按钮1-->
+				<li class="roadStates_ul_li1 tps"><p class="roadStates_ul_p1" onclick="part1Click(1)">运行状态</p><span class="roadStates_ul_span1">路网运行状态</span></li>
+				<li class="roadStates_ul_li2 vic"><p class="roadStates_ul_p2" onclick="part1Click(9)">饱和程度</p><span class="roadStates_ul_span2">交通饱和度</span></li>
+				<li class="roadStates_ul_li3 tvd"><p class="roadStates_ul_p3" onclick="part1Click(10)">车流密度</p><span class="roadStates_ul_span3">车流密度</span></li>
+				<li class="roadStates_ul_li4 tes"><p class="roadStates_ul_p4" onclick="part1Click(11)">行程车速</p><span class="roadStates_ul_span4">行程车速</span></li>
+                <li class="roadStates_ul_li5 runOff"><p class="roadStates_ul_p5 radiusState" onclick="part1Click(12)">道路流量</p><span class="roadStates_ul_span5">道路流量</span></li>
+			</ul>
+        <div id="nodes" class="jt_node_choice all_tc">
+            <ul><li onclick="setnodeVal()">查看所选节点属性</li></ul>
+        </div>
+         <div id="roads" class="jt_node_choice all_tc">
+            <ul>
+                <li onclick="setroadNetVal()">查看所选路段属性</li>
+                <li onclick="setRoadFlow()">查看路段流量数据</li>
+                <li onclick="setroadTrip()">查看路段旅行时间</li>
+            </ul>
+        </div> 
+        <div id="village" class="jt_node_choice all_tc">
+            <ul><li onclick="houseAttribute()">查看所选小区属性</li></ul>
+        </div>
+        <!--主体中右侧list-->
+        <div class="list2_choice" id="list_right">
+            <div class="rightArrow_frame" onclick="listShow()"><img src="images/index_left.png" class="rightArrow"></div>
+            <!--主体中右侧list中第一部分-->
+                <p class="list_title">交通分析工具</p>
+            <div class="right_lis1 over_hidden" id="R_list1">
+                <ul class="right_u1" id="r_uu1">
+                    <li><p><span>交通需求分析</span></p>
+                        <ul class="right_u2">
+                            <li>
+                                <label for="right_ipt1" ><input type="checkbox" name="right_ipt1" id="right_ipt1" onclick="jt_OD(1)"/>路网需求时空分布图</label> 
+                            </li>
+                            <li>
+                                <label for="right_ipt2" ><input type="checkbox" name="right_ipt2" id="right_ipt2" onclick="jt_OD(2)"/>小区需求时空分布图</label> 
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <p><span>路段分析</span></p>
+                        <ul class="right_u2">
+                            <li>
+                                <label for="right_ipt3" ><input type="checkbox" name="right_ipt3" id="right_ipt3" onclick="doAnalyseForm()" />路段交通分析汇总</label> 
+                            </li>
+                            <li>
+                                <label for="right_ipt4" ><input type="checkbox" name="right_ipt4" id="right_ipt4" onclick="doRoadAnalyse()" />所选路段交通分析</label> 
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <p><span>路径分析</span></p>
+                        <ul class="right_u2">
+                            <li>
+                                <label for="right_ipt5" ><input type="checkbox" name="right_ipt5" id="right_ipt5" onclick="" />行驶路径</label> 
+                            </li>
+                            <li>
+                                <label for="right_ipt6" ><input type="checkbox" name="right_ipt6" id="right_ipt6" onclick="Path(this)"/>路径分析</label> 
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <!--主体中右侧list中第二部分-->
+                <p class="list_title">综合决策工具</p>
+            <div class="right_lis2" id="R_list2">
+                <!-- <p class="list_btn">
+                    <input type="button" class="btn1" value ="框选仿真区域"/>
+                    <input type="button" class="btn2" value ="放弃"/>
+                </p> -->
+                <p class="villageBtn_frame">
+                    <input type="button" value="精细仿真区域" class="villageChoice_btn" onclick="regionAttrData()">
+                    <input type="button" value="放弃" onclick="empty_Site()" class="giveUp_btn1">
+                </p>
+                <textarea id="selectRegion" data="load" readonly="readonly" class="villageText" style="font-size:11px;"></textarea>
+                <p class="list_title2">评价方案设计</p>
+                <p class="list_select">
+                    <select id="indexSelect">
+                        <option>方案一</option>
+                        <option>方案二</option>
+                        <option>方案三</option>
+                    </select>
+                </p>
+                <p class="list_title2">项目选择</p>
+                <ul class="right_u3" id="r_uu2">
+                    <li><p><span>影响事件</span></p>
+                    	<ul class="right_u2" id="right_s1"></ul>
+                    </li>
+                    <li><p><span>优化措施</span></p>
+                        <ul class="right_u2" id="right_s2"></ul>
+                    </li>
+                    <li><p><span>优化措施</span></p>
+                        <ul class="right_u2" id="right_s3"></ul>
+                    </li>
+                </ul>
+                <p class="list_btn">
+                    <!-- <input type="button" class="btn1" value ="仿真选项" onclick="setSimulation()" /> -->
+                    <input type="button" class="btn1" value ="仿真选项" onclick="setSimulation()"/>
+                    <input type="button" class="btn2" value ="查看报告" onclick="appraisalReportHtml()" />
+                </p>
+            </div>
+        </div>
+    </div>
+    <div style="clear: both;"></div>
+    <footer style="display: none">
+        <ul>
+            <li class="li1"><img src="images/float/hui/0.png" onclick="footerClick(5)"/><p>信号控制</p></li>
+            <li class="li2"><img src="images/float/hui/1.png" onclick="footerClick(6)"/><p>路段车检</p></li>
+            <li class="li3"><img src="images/float/hui/2.png" onclick="footerClick(7)"/><p>路口车检</p></li>
+            <li class="li4"><img src="images/float/hui/3.png" onclick="footerClick(8)"/><p>旅行时间</p></li>
+            <li class="li5"><img src="images/float/hui/4.png" onclick="footerClick(9)"/><p>天气观测</p></li>
+            <li class="li6"><img src="images/float/hui/5.png" onclick="footerClick(10)"/><p>诱导显示</p></li>
+            <li class="li7"><img src="images/float/hui/6.png" onclick="footerClick(11)"/><p>视频监控</p></li>
+            <li class="li8"><img src="images/float/hui/8.png" onclick="footerClick(12)"/><p>排放检测</p></li>
+        </ul>
+    </footer>
+    <div id="footer" >
+        <div class="f_left" id="f_l">
+            <p class="pp1"><span id="DD" data=""></span></p>
+            <p class="pp2 reduce">
+                <input type="button" name="more1" title="日期选择"  class="more1 choice_time" id="list_time" value="..." onClick="jeDate({dateCell:'#DD',isTime:true,format:'YYYY-MM-DD'})"/>
+                <input type="button" name="ls_qd"  id="ls_enter" title="实时"/>
+                <input type="button" name="reduce" value="－" id="reduce_btn"/>
+            </p>
+        </div>
+        <div class="f_mid" >
+            <div id="myTimeline">
+                <ul class="timeline">  
+                  <li>  
+                      <span class="start_time">00</span>
+                      <span class="kd"></span>
+                  </li>  
+                  <li>  
+                      <span class="kd"></span>
+                  </li>  
+                  <li>  
+                    <span class="kd"></span>  
+                  </li>  
+                  <li>  
+                    <span class="kd"></span> 
+                  </li>  
+                  <li>  
+                    <span class="kd"></span>  
+                  </li>  
+                  <li>  
+                    <span class="kd"></span>  
+                  </li>  
+                  <li>  
+                    <span class="kd"></span> 
+                  </li>  
+                  <li>  
+                    <span class="kd"></span> 
+                  </li>  
+                  <li>  
+                    <span class="kd"></span>  
+                  </li>  
+                  <li>  
+                    <span class="kd"></span>  
+                  </li>  
+                  <li>  
+                    <span class="kd"></span>  
+                  </li>  
+                  <li>  
+                    <span class="kd"></span>  
+                  </li>  
+                  <li>  
+                    <span class="kd"></span>  
+                  </li>  
+                  <li>  
+                    <span class="kd"></span>  
+                  </li>  
+                  <li>  
+                    <span class="kd"></span> 
+                  </li>  
+                  <li>  
+                    <span class="kd"></span>
+                  </li>  
+                  <li>  
+                    <span class="kd"></span>  
+                  </li>  
+                  <li>  
+                    <span class="kd"></span>  
+                  </li>  
+                  <li>  
+                    <span class="kd"></span> 
+                  </li>  
+                  <li>  
+                    <span class="kd"></span>  
+                  </li>  
+                  <li>  
+                    <span class="kd"></span>
+                  </li>  
+                  <li>  
+                    <span class="kd"></span> 
+                  </li>  
+                  <li>  
+                    <span class="kd"></span>  
+                  </li>  
+                  <li>  
+                    <span class="end_time">24</span>
+                    <span class="kd"></span> 
+                  </li>  
+                </ul> 
+                <div class="vernier" id="yb">
+                    <time id="vernier_time" >12:30</time>
+                </div> 
+            </div>
+            <div class="rd">
+                <span class="s1"></span>
+                <span class="s2"></span>
+                <span class="s3"></span>
+                <span class="s2"></span>
+                <span class="s1"></span>
+                <span class="s1"></span>
+                <span class="s3"></span>
+                <span class="s2"></span>
+                <span class="s1"></span>
+                <span class="s3"></span>
+                <span class="s1"></span>
+                <span class="s2"></span>
+                <span class="s3"></span>
+                <span class="s2"></span>
+                <span class="s1"></span>
+                <span class="s1"></span>
+                <span class="s3"></span>
+                <span class="s2"></span>
+                <span class="s2"></span>
+                <span class="s3"></span>
+                <span class="s1"></span>
+                <span class="s1"></span>
+                <span class="s2"></span>
+                <span class="s1"></span>
+            </div>
+        </div>
+        <div class="f_right">
+            <!-- <p class="pp1"><span class="spa1">小时指数:</span><span class="spa2">9</span></p> -->
+            <p class="pp2 add"><input type="button" name="add" value="+" id="yc">
+                    <input type="button" name="yc_qd"  id="yc_enter" title="快放"/>
+                    <!--<span class="more">...</span>-->
+                    <input type="button" name="more"  class="more" value="..." title="时间刻度"/>
+                    <select name="rule" id="rule">
+                        <option>5Min</option>
+                        <option>10Min</option> 
+                        <option>30Min</option>
+                        <option>60Min</option> 
+                    </select>
+            </p>
+            <div style="clear: both;"></div>
+            <!--<p class="pp3">
+                
+            </p>-->
+        </div>
+    </div>
+</div>
+
+
+<script src="javaScript/footer_click.js"></script>
+<script type="text/javascript">
+// function  show1(){
+//     $(".list_choice").toggle();
+// }
+// function  show2(){
+//     $(".list2_choice").toggle();
+// }
+$(".list_btn .btn1").click(function(){
+    $(".zhao").css("display","block");
+        $(".fz_kuang").css("display","block");
+        $(".fz_main").append('<div id="map1"></div>');
+        simulat();
+    });
+</script>
+<script type="text/javascript">
+    // $(".empty").click(function(){
+    //     $(".zhao").css("display","none");
+    //     $(".fz_kuang").css("display","none");
+    //     $("#map1").remove();
+    //     $("#influence li").remove(); 
+    //     $("#measure li").remove(); 
+    // });
+    // $(".lessen1").click(function(){
+    //     $(".zhao").css("display","none");
+    //     $(".fz_kuang").css("display","none");
+    //     $("#enlarge").css("display","block");
+    // });
+    // $(".lessen2").click(function(){
+    //     $(".zhao").css("display","block");
+    //     $(".fz_kuang").css("display","block");
+    // });
+</script>
+<script type="text/javascript">
+    /*index两侧列表里的小项收起*/
+    $("#uu1 p").click(function(){
+        $(this).toggleClass("arrow_p");
+        $(this).next(".u2").children("li").fadeToggle();
+    });
+    $(".right_u1 p,.right_u3 p").click(function(){
+        $(this).toggleClass("arrow_p");
+        $(this).next(".right_u2").children("li").fadeToggle();
+    });
+</script>
+
+<script src = 'javaScript/height.js'></script>
+    <script src="javaScript/index_map.js"></script>
+    <script src = "javaScript/dtjtMap.js"></script>
+    <script type="text/javascript">
+        var supermapOD,layerOD,supermap1,layer00,supermap1,supermap,layer,gmarker,menu,coord, marker,pointVector,vectorRoad,markerOD,region;
+        function init(){
+            supermap = new SuperMap.Map("map", {
+                controls : [ new SuperMap.Control.Navigation(),
+                    new SuperMap.Control.MousePosition()
+                   ],
+                eventListeners:{"movestart":function(){
+                    $(".all_tc").css("visibility","hidden");
+                },
+                "click":function(){
+                    $(".all_tc").css("visibility","hidden");
+                 }}
+            });
+            layer = new SuperMap.Layer.CloudLayer();
+            // vector = new SuperMap.Layer.Vector("vector");
+            supermap.addLayers([layer]);
+            setCenter();
+            supermap.events.on({"click":addMarker2Map});
+            //初始化标记图层类
+            createCheck();
+            roadCotrol();
+            var divTxt=document.getElementById("DD");
+            divTxt.innerHTML='2016-04-01';
+			queryRoadNetFeature();
+    }
+    function roadCotrol(){
+        var vector=supermap.getLayersByName("markerLayer2")[0]; 
+        vectorRoad = new SuperMap.Control.SelectFeature(vector,{
+                    callbacks: {}
+                }); 
+        supermap.addControl(vectorRoad);
+        vectorRoad.activate();
+    }
+    function simulat() {
+        //var supermap1,layer00,markerlayer33;
+        supermap1 = new SuperMap.Map("map1", {
+            controls : [ new SuperMap.Control.Navigation(),
+                    new SuperMap.Control.Zoom()
+            /*new SuperMap.Control.MousePosition()*/]
+        });
+
+        layer00 = new SuperMap.Layer.CloudLayer();
+        region = new SuperMap.Layer.Vector("region");//小区
+        supermap1.addLayers([layer00,region]);
+        supermap1.setCenter(new SuperMap.LonLat(12990226.0445648,
+                4793154.9179491), 12);
+    }
+    
+</script>
+<script src = 'javaScript/click.js'></script>
+<script src = 'javaScript/chartsData.js'></script>
+<script src="js/jedate/jedate.js"></script>
+<script src="js/echarts.common.min.js"></script>
+</body>
+</html>
